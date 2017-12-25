@@ -126,7 +126,7 @@ void TcpClient::receive()
     // Генерация сигнала об успешной авторизации
     if (tcp_state.recv_count == 1)
     {
-        if (strcmp(incomingData_.data(), "authorized") == 0)
+        if (strcmp(incomingData_.data(), AUTH_WORD) == 0)
         {
             emit authorized();
         }
@@ -144,6 +144,11 @@ void TcpClient::onConnect()
     if (socket->isOpen())
     {      
         tcp_cmd_t cmd;
+        cmd.command = ATcp::tcAUTHORIZATION;
+        //cmd.bufferSize = tcp_config.name.toUtf8().size() + 1;;
+        //memcpy(cmd.buffer, tcp_config.name.toStdString().c_str(), cmd.bufferSize);
+        cmd.setData(tcp_config.name.toStdString().c_str(), tcp_config.name.size() + 1);
+
 
 //        client_cmd_t cmd;
 //        cmd.id = AUTHORIZATION;
@@ -153,7 +158,7 @@ void TcpClient::onConnect()
 //        QByteArray toSend = QByteArray::fromRawData((const char*) &cmd,
 //                                                    sizeof(client_cmd_t));
 
-        sendToServer(cmd.toByteAray());
+        sendToServer(cmd.toByteArray());
     }
 
     emit connectedToServer();

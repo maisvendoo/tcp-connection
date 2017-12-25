@@ -49,7 +49,7 @@ public:
 //    QByteArray getCommandsArray(); // delete
 
     ///
-    void setEngineDefiner(AbstractEngineDefiner *&definer);
+    void setEngineDefiner(AbstractEngineDefiner *definer);
 
 
 signals:

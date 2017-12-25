@@ -4,6 +4,8 @@
 
 #include <QObject>
 
+const char AUTH_WORD[4]{'a', 'u', 't', 'h'};
+
 class ATcp
 {
     Q_GADGET

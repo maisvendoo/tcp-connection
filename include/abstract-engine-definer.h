@@ -3,6 +3,7 @@
 #define ABSTRACT_ENGINE_DEFINER_H
 
 #include <qcompilerdetection.h>
+#include <QString>
 
 class AbstractDataEngine;
 class AbstractClientDelegate;

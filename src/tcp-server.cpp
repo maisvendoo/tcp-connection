@@ -20,7 +20,7 @@ TcpServer::TcpServer(QObject *parent)
 //    this->port = port;
 //    is_started = false;
 
-    connect(this, SIGNAL(newConnection()), this, SLOT(clientConnection_old()));
+    connect(this, SIGNAL(newConnection()), this, SLOT(clientConnection_()));
 
     connect(this, SIGNAL(acceptError(QAbstractSocket::SocketError)),
             this, SLOT(onAcceptError(QAbstractSocket::SocketError)));
@@ -161,7 +161,7 @@ void TcpServer::start(quint16 port)
 
 
 
-void TcpServer::setEngineDefiner(AbstractEngineDefiner *&definer)
+void TcpServer::setEngineDefiner(AbstractEngineDefiner *definer)
 {
     if (engineDefiner_)
         delete engineDefiner_;
@@ -351,7 +351,7 @@ void TcpServer::clientConnection_()
     clients_.insert(client_id, client);
 
     connect(sock, SIGNAL(readyRead()),
-            this, SLOT(clientConnection_()));
+            this, SLOT(receive_()));
 
     connect(sock, SIGNAL(disconnected()),
             this, SLOT(clientDisconnected_()));
@@ -414,19 +414,22 @@ void TcpServer::receive_()
         return;
 
     //
-    ATcp::TcpCommand cmd = ATcp::tcZERO;
-    memcpy(&cmd, arr.data(), sizeof(ATcp::TcpCommand));
+//    ATcp::TcpCommand cmd = ATcp::tcZERO;
+//    memcpy(&cmd, arr.data(), sizeof(ATcp::TcpCommand));
+    ATcp::TcpCommand cmd = tcp_cmd_t::extractCommand(arr);
 
     //
-    ptrdiff_t offset = sizeof(ATcp::TcpCommand);
+//    ptrdiff_t offset = sizeof(ATcp::TcpCommand);
 
-    size_t data_size = 0;
-    memcpy(&data_size, arr.data() + offset, sizeof(size_t));
+//    size_t data_size = 0;
+//    memcpy(&data_size, arr.data() + offset, sizeof(size_t));
+    size_t data_size = tcp_cmd_t::extractBufferSize(arr);
 
     //
-    offset += sizeof(size_t);
+//    offset += sizeof(size_t);
 
-    if (data_size != static_cast<size_t>(arr.size()) - offset)
+//    if (data_size != static_cast<size_t>(arr.size()) - offset)
+    if (data_size != static_cast<size_t>(arr.size()) - tcp_cmd_t::INFO_SIZE)
         return;
 
     //

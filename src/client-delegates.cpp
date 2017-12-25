@@ -167,10 +167,10 @@ void ClientDelegate::storeInputData()
     if (socket_->state() != QTcpSocket::ListeningState)
         return;
 
-    QByteArray buf = socket_->readAll();
+    //QByteArray buf = socket_->readAll();
 
-    if (buf.size() != sizeof(tcp_cmd_t)) // FIXME delete - перенести в сервер!
-        return;
+//    if (buf.size() != sizeof(tcp_cmd_t_old)) // FIXME delete - перенести в сервер!
+//        return;
 
     engine_->setInputData(socket_->readAll());
 }
@@ -190,7 +190,7 @@ void ClientDelegate::sendAuthorized()
 {
     if (socket_->isOpen())
     {
-        QByteArray arr("auth");
+        QByteArray arr(AUTH_WORD);
         socket_->write(arr);
         socket_->flush();
     }
