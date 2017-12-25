@@ -85,6 +85,23 @@ public:
     };
     Q_ENUM(AuthResponse)
 
+
+    ///
+    template<typename T>
+    static QByteArray toByteArray(T data, bool *ok = Q_NULLPTR)
+    {
+        bool tempOk = std::is_trivially_copyable<T>::value;
+        if (ok)
+            *ok = tempOk;
+        if (tempOk)
+        {
+            QByteArray arr(sizeof(T), Qt::Uninitialized);
+            memcpy(arr.data(), &data, sizeof(T));
+            return arr;
+        }
+        return QByteArray();
+    }
+
 };
 
 #endif // ATCPNAMESPACE_H

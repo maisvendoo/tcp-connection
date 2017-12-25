@@ -61,7 +61,7 @@ signals:
     ///
     void requestDataFromServer(char* data);
 
-private:
+protected:
     ///
     QByteArray inputBuffer_;
     ///

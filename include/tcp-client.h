@@ -5,15 +5,15 @@
 
 #include	<QtGlobal>
 #include    <QObject>
-//#include    <QTcpSocket>
 #include    <QDataStream>
-//#include    <QMetaType>
+
+#include "tcp-client-structs.h"
+#include "a-tcp-namespace.h"
 
 class QTimer;
 class QTcpSocket;
 
-#include "tcp-client-structs.h"
-#include "a-tcp-namespace.h"
+struct tcp_cmd_t;
 
 #if defined(TCPCONNECTION_LIB)
 # define TCPCLIENT_EXPORT Q_DECL_EXPORT
@@ -50,16 +50,11 @@ public:
     ///
     const tcp_config_t getConfig() const;
 
-
-public slots:
-    /// Cоединение с сервером
-    void connectToServer();
+    ///
+    void sendToServer(ATcp::TcpCommand comm, QByteArray data);
 
     /// Передача данных серверу
-    void sendToServer(QByteArray send_data);
-
-    ///
-    void connectArrayPtr(QByteArray* &arrPtr);
+    void sendToServer(tcp_cmd_t &cmd);
 
 
 signals:
@@ -83,14 +78,17 @@ signals:
 
 
 public slots:
+    /// Cоединение с сервером
+    void connectToServer();
+
     /// Прием данных от сервера
     void receive();
 
     /// Обработка факта соединения с сервером
-    void onConnect();
+    void slotConnect();
 
     /// Обработка факта разрыва соединения с сервером
-    void onDisconnect();
+    void slotDisconnect();
 
 
 protected:
@@ -122,6 +120,9 @@ private:
 
 
 private slots:
+    ///
+    void sendToServer_(QByteArray send_data);
+
     ///
     void onTimerConnector();
 

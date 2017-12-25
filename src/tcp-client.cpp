@@ -38,7 +38,7 @@ void TcpClient::init(tcp_config_t tcp_config)
     this->tcp_config = tcp_config;
 
     // Создаем клиентский сокет
-    socket = new QTcpSocket();
+    socket = new QTcpSocket(this);
     in.setDevice(socket);
     in.setVersion(QDataStream::Qt_4_0);
 
@@ -51,10 +51,10 @@ void TcpClient::init(tcp_config_t tcp_config)
     // Связываем сигналы и слоты
 
     // обработка соединения
-    connect(socket, SIGNAL(connected()), this, SLOT(onConnect()));
+    connect(socket, SIGNAL(connected()), this, SLOT(slotConnect()));
 
     // обработка дисконнекта
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(slotDisconnect()));
 
     // прием данных
     connect(socket, SIGNAL(readyRead()), this, SLOT(receive()));
@@ -92,6 +92,25 @@ const tcp_config_t TcpClient::getConfig() const
 
 
 
+
+void TcpClient::sendToServer(ATcp::TcpCommand comm, QByteArray data)
+{
+    tcp_cmd_t cmd;
+    cmd.info.command = comm;
+    cmd.setData(data);
+    sendToServer_(cmd.toByteArray());
+}
+
+
+
+
+void TcpClient::sendToServer(tcp_cmd_t &cmd)
+{
+    sendToServer_(cmd.toByteArray());
+}
+
+
+
 //------------------------------------------------------------------------------
 //  (слот) Cоединение с сервером
 //------------------------------------------------------------------------------
@@ -105,29 +124,6 @@ void TcpClient::connectToServer()
     socket->connectToHost(tcp_config.host_addr,
                           tcp_config.port,
                           QIODevice::ReadWrite);
-}
-
-
-
-//------------------------------------------------------------------------------
-//  (слот) Передача данных серверу
-//------------------------------------------------------------------------------
-void TcpClient::sendToServer(QByteArray send_data)
-{
-    socket->write(send_data);
-    socket->flush();
-
-    tcp_state.send_count++;
-}
-
-
-
-//------------------------------------------------------------------------------
-//  (слот) Прием данных от сервера
-//------------------------------------------------------------------------------
-void TcpClient::connectArrayPtr(QByteArray *&arrPtr)
-{
-    arrPtr = &incomingData_;
 }
 
 
@@ -182,7 +178,7 @@ void TcpClient::receive()
 //------------------------------------------------------------------------------
 //  (слот) Обработка факта соединения с сервером
 //------------------------------------------------------------------------------
-void TcpClient::onConnect()
+void TcpClient::slotConnect()
 {
     timerConnector_->stop();
     tcp_state.recv_count = tcp_state.send_count = 0;
@@ -195,7 +191,7 @@ void TcpClient::onConnect()
         cmd.info.command = ATcp::tcAUTHORIZATION;
         cmd.setData(tcp_config.name);
 
-        sendToServer(cmd.toByteArray());
+        sendToServer_(cmd.toByteArray());
     }
 
     emit connectedToServer();
@@ -206,7 +202,7 @@ void TcpClient::onConnect()
 //------------------------------------------------------------------------------
 //  (слот) Обработка факта разрыва соединения с сервером
 //------------------------------------------------------------------------------
-void TcpClient::onDisconnect()
+void TcpClient::slotDisconnect()
 {    
     emit disconnectedFromServer();
 
@@ -241,6 +237,19 @@ void TcpClient::handleAuthError_(ATcp::ClientCodes _cl)
     emit authorizationDenied(lastAuthResponse_);
     emit logPrint(_cl, tcp_config.name);
     socket->disconnectFromHost();
+}
+
+
+
+//------------------------------------------------------------------------------
+//  (слот) Передача данных серверу
+//------------------------------------------------------------------------------
+void TcpClient::sendToServer_(QByteArray send_data)
+{
+    socket->write(send_data);
+    socket->flush();
+
+    tcp_state.send_count++;
 }
 
 
