@@ -44,7 +44,7 @@ void TcpClient::init(tcp_config_t tcp_config)
 
     // Создаём и настраиваем таймер-коннектор
     timerConnector_ = new QTimer(this);
-    timerConnector_->setInterval(tcp_config.ms_timeout);
+    timerConnector_->setInterval(tcp_config.reconnect_interval);
     connect(timerConnector_, SIGNAL(timeout()),
             this, SLOT(onTimerConnector()));
 
@@ -186,6 +186,8 @@ void TcpClient::onConnect()
 {
     timerConnector_->stop();
     tcp_state.recv_count = tcp_state.send_count = 0;
+    logPrint(ATcp::cc_OK_CONNECTED,
+             QString::number(socket->socketDescriptor()));
 
     if (socket->isOpen())
     {      
@@ -207,6 +209,8 @@ void TcpClient::onConnect()
 void TcpClient::onDisconnect()
 {    
     emit disconnectedFromServer();
+
+    socket->abort();
 
     // Сбрасываем счетчик
     tcp_state.recv_count = tcp_state.send_count = 0;

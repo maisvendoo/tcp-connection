@@ -60,7 +60,10 @@ public:
     enum ClientCodes
     {
         cc_UNKNOWN_CODE,        ///< Неизвестная ситуация
+        //
+        cc_IN_AUTHORIZATION,
         // OK сообщения
+        cc_OK_CONNECTED,
         cc_OK_AUTHOROZED,       ///< Клиент авторизован
         // ERROR сообщения
         cc_ER_NAME_DUPLICATE,   ///< Дублирование имён

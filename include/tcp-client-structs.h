@@ -34,23 +34,21 @@ struct tcp_state_t
 //------------------------------------------------------------------------------
 struct tcp_config_t
 {
-    /// Таймаут между попытками соедиения
-    int     cmd;
     /// Имя клиента (сигнатура для идентификации на сервере)
     QString name;
     /// Адрес сервера
     QString host_addr;
     /// Порт, на котором слушает сревер
     quint16 port;
-    int     ms_timeout;
+    /// Таймаут между попытками соедиения
+    int     reconnect_interval;
 
     tcp_config_t()
     {
-        cmd = 0;
         name = "";
         host_addr = "127.0.0.1";
         port = 1992;
-        ms_timeout = 1000;
+        reconnect_interval = 1000;
     }
 };
 
