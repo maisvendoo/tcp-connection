@@ -90,7 +90,7 @@ private:
                 engineDefiner_; ///< Опредилитель механизмов подготовки данных
 
     // Список допустимых имён клиентов
-    QStringList possibleClients_; ///< Список допустимых имён клиентов
+    QStringList guestList_; ///< Список допустимых имён клиентов
 
     // Список подключенных клиентов
     NewList newClients_; ///< Список подключенных клиентов
@@ -108,7 +108,11 @@ private:
     */
 
     /// Авторизовать клиента с заданным именем
-    void authorizeClient_(AbstractClientDelegate* clnt, QByteArray name);
+//    void authorizeClient_(AbstractClientDelegate* clnt, QByteArray name);
+    void authorizeClient_(AbstractClientDelegate *clnt);
+
+    ///
+    void handleCommand_(ATcp::TcpCommand cmd, AbstractClientDelegate* clnt);
 
 
 private slots:

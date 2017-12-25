@@ -110,5 +110,5 @@ NullDataEngine::NullDataEngine()
 //-----------------------------------------------------------------------------
 QByteArray NullDataEngine::getPreparedData()
 {
-    return QByteArray();
+    return inputBuffer_;
 }

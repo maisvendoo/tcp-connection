@@ -83,10 +83,9 @@ AbstractClientDelegate::AbstractClientDelegate(QObject *parent)
     , name_("")
     , localId_(0)
     , socket_(Q_NULLPTR)
-    , engine_(Q_NULLPTR)
+    , engine_(new NullDataEngine())
 {
-//    connect(this, SIGNAL(dataReceived(QByteArray)),
-//            face_, SIGNAL(dataReceived(QByteArray)));
+
 }
 
 
@@ -129,14 +128,18 @@ QString AbstractClientDelegate::getName() const
 //-----------------------------------------------------------------------------
 // Установить имя
 //-----------------------------------------------------------------------------
-void AbstractClientDelegate::setName(QString name)
-{
-    name_ = std::move(name);
-}
+//void AbstractClientDelegate::setName(QString name)
+//{
+//    name_ = std::move(name);
+//}
 
-void AbstractClientDelegate::remindName()
+void AbstractClientDelegate::rememberName()
 {
-    name_ = socket_->readAll();
+    if (!socket_->isOpen())
+        return;
+
+    // Читаем остатки данных из сокета
+    engine_->setInputData(socket_->readAll());
 }
 
 
@@ -167,6 +170,12 @@ qintptr AbstractClientDelegate::getId() const
 //-----------------------------------------------------------------------------
 void AbstractClientDelegate::setDataEngine(AbstractDataEngine *engine)
 {
+    if (engine == Q_NULLPTR)
+        return;
+
+    if (engine_)
+        delete engine_;
+
     engine_ = engine;
 }
 
@@ -195,7 +204,6 @@ DummyDelegate::DummyDelegate(QObject* parent)
     : AbstractClientDelegate(parent)
 {
     name_ = "dummy";
-    engine_ = new NullDataEngine();
 }
 
 //-----------------------------------------------------------------------------
@@ -206,14 +214,19 @@ DummyDelegate::~DummyDelegate()
     // Ничего не делать
 }
 
+void DummyDelegate::rememberName()
+{
+    // Ничего не делать
+}
+
 //-----------------------------------------------------------------------------
 // Установить имя (пустышка)
 //-----------------------------------------------------------------------------
-void DummyDelegate::setName(QString name)
-{
-    Q_UNUSED(name);
-    // Ничего не делать
-}
+//void DummyDelegate::setName(QString name)
+//{
+//    Q_UNUSED(name);
+//    // Ничего не делать
+//}
 
 //-----------------------------------------------------------------------------
 // Установить сокет (пустышка)

@@ -93,7 +93,7 @@ void TcpServer::start(quint16 port)
 //-----------------------------------------------------------------------------
 void TcpServer::setPossibleClients(QStringList names)
 {
-    possibleClients_ = std::move(names);
+    guestList_ = std::move(names);
 }
 
 
@@ -144,12 +144,77 @@ void TcpServer::enableDummy(bool enabled)
 //-----------------------------------------------------------------------------
 // Авторизовать клиента с заданным именем
 //-----------------------------------------------------------------------------
-void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray name)
+//void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray name)
+//{
+//    QString newName(name);
+
+//    // Если список допустимых клиентов не пустой и клиент не в этом списке
+//    if ( !(guestList_.isEmpty() || guestList_.contains(name)) )
+//    {
+//        clnt->sendAuthorizationResponse(ATcp::ar_UNKNOWN_NAME);
+
+//        emit logPrint(ATcp::sc_ER_CLIENT_UNKNOWN_NAME,
+//                      newName % ":" % QString::number(clnt->getId()));
+
+//        return;
+//    }
+//    /*
+//        Если список допустимых клиентов пуст, то рассматриваются все клиенты
+//        с уникальными именами(см. след. проверку)
+//    */
+
+//    // Если клиент с таким именем уже есть в списке авторизованных
+//    if (authorizedClients_.contains(newName))
+//    {
+//        clnt->sendAuthorizationResponse(ATcp::ar_NAME_DUPLICATE);
+
+//        emit logPrint(ATcp::sc_ER_CLIENT_NAME_DUPLICATE,
+//                      newName % ":" % QString::number(clnt->getId()));
+
+//        return;
+//    }
+
+//    /*
+//        Если список допустимых клиентов не задан(пуст), если имя клиента есть
+//        в списке допустимых клиентов и имя клиента уникально(клиент с таким
+//        именеи еще не авторизован), тогда авторизуем клиента
+//    */
+//    clnt->setName(newName);
+//    // Позволяем определителю механизмов данных установить необходимый механизм
+//    engineDefiner_->setDataEngine(clnt);
+//    authorizedClients_.insert(clnt->getName(), clnt);
+
+//    clnt->sendAuthorizationResponse(ATcp::ar_AUTHORIZED);
+
+//    emit logPrint(ATcp::sc_OK_CLIENT_AUTHORIZED,
+//                  newName % ":" % QString::number(clnt->getId()));
+
+//    emit clientAuthorized(clnt->face());
+//}
+
+
+
+
+void TcpServer::authorizeClient_(AbstractClientDelegate *clnt)
 {
-    QString newName(name);
+    emit logPrint(ATcp::sc_IN_AUTHORIZATION_REQUEST,
+                  QString::number(clnt->getId()));
+
+    QString newName(clnt->getInputBuffer());
+
+    // Если имя, присланное клиентом пусто
+    if (newName.isEmpty())
+    {
+        clnt->sendAuthorizationResponse(ATcp::ar_EMPTY_NAME);
+
+        emit logPrint(ATcp::sc_ER_CLIENT_EMPTY_NAME,
+                      QString::number(clnt->getId()));
+
+        return;
+    }
 
     // Если список допустимых клиентов не пустой и клиент не в этом списке
-    if ( !(possibleClients_.isEmpty() || possibleClients_.contains(name)) )
+    if ( !guestList_.isEmpty() && !guestList_.contains(newName) )
     {
         clnt->sendAuthorizationResponse(ATcp::ar_UNKNOWN_NAME);
 
@@ -179,7 +244,7 @@ void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray name)
         в списке допустимых клиентов и имя клиента уникально(клиент с таким
         именеи еще не авторизован), тогда авторизуем клиента
     */
-    clnt->setName(newName);
+    clnt->rememberName();
     // Позволяем определителю механизмов данных установить необходимый механизм
     engineDefiner_->setDataEngine(clnt);
     authorizedClients_.insert(clnt->getName(), clnt);
@@ -187,9 +252,50 @@ void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray name)
     clnt->sendAuthorizationResponse(ATcp::ar_AUTHORIZED);
 
     emit logPrint(ATcp::sc_OK_CLIENT_AUTHORIZED,
-                  newName % ":" % QString::number(clnt->getId()));
+                  clnt->getName() % ":" % QString::number(clnt->getId()));
 
     emit clientAuthorized(clnt->face());
+}
+
+
+
+
+void TcpServer::handleCommand_(ATcp::TcpCommand cmd,
+                               AbstractClientDelegate *clnt)
+{
+    switch (cmd)
+    {
+    // Нулевой запрос
+    case ATcp::tcZERO:
+        return;
+        break;
+
+    // Запрос авторизации
+    case ATcp::tcAUTHORIZATION:
+//        clnt->rememberName();
+        authorizeClient_(clnt);
+        break;
+
+    // Запрос данных без сохранения буффера запроса
+    case ATcp::tcGET:
+        clnt->sendDataToTcpClient();
+        break;
+
+    // Сохранение буффера запроса без запроса данных
+    case ATcp::tcPOST:
+         clnt->storeInputData();
+        break;
+
+    // Сохранение буффера запроса и запрос данных
+    case ATcp::tcPOSTGET:
+        clnt->storeInputData();
+        clnt->sendDataToTcpClient();
+        break;
+
+    default:
+        return;
+        break;
+    }
 }
 
 
@@ -252,7 +358,9 @@ void TcpServer::receive_()
     if(!client)
         return;
 
+    handleCommand_(info.command, client);
 
+/*
     switch (info.command)
     {
     // Нулевой запрос
@@ -262,9 +370,11 @@ void TcpServer::receive_()
 
     // Запрос авторизации
     case ATcp::tcAUTHORIZATION:
-        emit logPrint(ATcp::sc_IN_AUTHORIZATION_REQUEST,
-                      QString::number(sock->socketDescriptor()));
-        authorizeClient_(client, sock->readAll());
+//        emit logPrint(ATcp::sc_IN_AUTHORIZATION_REQUEST,
+//                      QString::number(sock->socketDescriptor()));
+//        authorizeClient_(client, sock->readAll());
+        client->rememberName();
+        authorizeClient_(client);
         break;
 
     // Запрос данных без сохранения буффера запроса
@@ -287,6 +397,7 @@ void TcpServer::receive_()
         return;
         break;
     }
+    */
 }
 
 
@@ -312,6 +423,7 @@ void TcpServer::clientDisconnected_()
 
     // Удаляем делегата из всех списков
     newClients_.remove(sock);
+//    if (authorizedClients_.values().contains(client.data()))
     authorizedClients_.remove(client->getName());
 
     emit logPrint(ATcp::sc_OK_CLIENT_DISCONNECTED,

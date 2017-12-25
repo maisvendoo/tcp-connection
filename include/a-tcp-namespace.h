@@ -58,6 +58,7 @@ public:
         sc_ER_SERVER_NOT_STARTED,    ///< Сервер не запущен
         sc_ER_CLIENT_NAME_DUPLICATE, ///< Дублирование имён клиентов
         sc_ER_CLIENT_UNKNOWN_NAME,   ///< Неизвестное имя клиента
+        sc_ER_CLIENT_EMPTY_NAME,     ///< Пустое имя клиента
         sc_ER_SERVER_INTERNAL_ERROR  ///< Внутренняя ошибка QTcpServer
     };
     Q_ENUM(ServerCodes)
@@ -77,7 +78,8 @@ public:
         cc_OK_AUTHOROZED,       ///< Клиент авторизован
         // ERROR сообщения
         cc_ER_NAME_DUPLICATE,   ///< Дублирование имён
-        cc_ER_UNKNOWN_NAME      ///< Неизвестное имя клиента
+        cc_ER_UNKNOWN_NAME,     ///< Неизвестное имя клиента
+        cc_ER_EMPTY_NAME        ///< Пустое имя
     };
     Q_ENUM(ClientCodes)
 
@@ -88,10 +90,11 @@ public:
      */
     enum AuthResponse
     {
-        ar_NO_RESONSE = 0x0,     ///< Нулевое значение
-        ar_AUTHORIZED = 0x1,     ///< Авторизован
-        ar_NAME_DUPLICATE = 0x2, ///< Отказ авторизации, дублирование имён
-        ar_UNKNOWN_NAME = 0x3    ///< Отказ авторизации, неизвестное имя
+        ar_NO_RESONSE,      ///< Нулевое значение
+        ar_AUTHORIZED,      ///< Авторизован
+        ar_NAME_DUPLICATE,  ///< Отказ авторизации, дублирование имён
+        ar_UNKNOWN_NAME,    ///< Отказ авторизации, неизвестное имя
+        ar_EMPTY_NAME       ///< Отказ авторизации, пустое имя
     };
     Q_ENUM(AuthResponse)
 

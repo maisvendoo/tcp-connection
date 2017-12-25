@@ -90,8 +90,8 @@ public:
     QString getName() const;
 
     /// Установить имя
-    virtual void setName(QString name); // delete заменить на следующий
-    virtual void remindName();
+//    virtual void setName(QString name); // delete заменить на следующий
+    virtual void rememberName();
 
     /// Установить сокет
     virtual void setSocket(QTcpSocket* sock);
@@ -154,7 +154,8 @@ public:
     ~DummyDelegate();
 
     /// Установить имя (пустышка)
-    void setName(QString name) Q_DECL_OVERRIDE;
+//    void setName(QString name) Q_DECL_OVERRIDE;
+    void rememberName() Q_DECL_OVERRIDE;
 
     /// Установить сокет (пустышка)
     void setSocket(QTcpSocket* sock) Q_DECL_OVERRIDE;
