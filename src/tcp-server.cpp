@@ -172,6 +172,14 @@ void TcpServer::setEngineDefiner(AbstractEngineDefiner *definer)
 
 
 
+AbstractClientDelegate *TcpServer::getClient(QString clientName)
+{
+    return authorizedClients_.value(clientName, dummyClient_);
+}
+
+
+
+
 void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray name)
 {
     QString newName(name);
@@ -406,31 +414,44 @@ void TcpServer::receive_()
     //
     QTcpSocket* sock = qobject_cast<QTcpSocket*>(sender());
 
-    QByteArray arr = sock->readAll();
+    //QByteArray arr = sock->readAll();
 
     //
-    size_t infoDataSize = sizeof(ATcp::TcpCommand) + sizeof(size_t);
-    if (static_cast<size_t>(arr.size()) < infoDataSize)
+//    size_t infoDataSize = sizeof(ATcp::TcpCommand) + sizeof(size_t);
+//    if (static_cast<size_t>(arr.size()) < infoDataSize)
+//        return;
+//    if (static_cast<size_t>(sock->size()) < tcp_cmd_t::INFO_SIZE)
+//        return;
+
+    if (!tcp_cmd_t::validInfoSize(sock))
         return;
+
+    ATcp::TcpCommand cmd = tcp_cmd_t::extractCommand(sock);
+
+    size_t bufSize = tcp_cmd_t::extractBufferSize(sock);
+
+    if(!tcp_cmd_t::validBufferSize(bufSize, sock))
+        return;
+
 
     //
 //    ATcp::TcpCommand cmd = ATcp::tcZERO;
 //    memcpy(&cmd, arr.data(), sizeof(ATcp::TcpCommand));
-    ATcp::TcpCommand cmd = tcp_cmd_t::extractCommand(arr);
+//    ATcp::TcpCommand cmd = tcp_cmd_t::extractCommand(arr);
 
     //
 //    ptrdiff_t offset = sizeof(ATcp::TcpCommand);
 
 //    size_t data_size = 0;
 //    memcpy(&data_size, arr.data() + offset, sizeof(size_t));
-    size_t data_size = tcp_cmd_t::extractBufferSize(arr);
+//    size_t data_size = tcp_cmd_t::extractBufferSize(arr);
 
     //
 //    offset += sizeof(size_t);
 
 //    if (data_size != static_cast<size_t>(arr.size()) - offset)
-    if (data_size != static_cast<size_t>(arr.size()) - tcp_cmd_t::INFO_SIZE)
-        return;
+//    if (data_size != static_cast<size_t>(arr.size()) - tcp_cmd_t::INFO_SIZE)
+//        return;
 
     //
     quintptr cl_id = sock->socketDescriptor();
@@ -445,7 +466,8 @@ void TcpServer::receive_()
 
     case ATcp::tcAUTHORIZATION:
         emit logPrint(ATcp::IN_AUTHORIZATION_REQUEST, QString::number(cl_id));
-        authorizeClient_(client, arr.right(data_size));
+//        authorizeClient_(client, arr.right(static_cast<int>(data_size)));
+        authorizeClient_(client, sock->readAll());
         break;
 
     case ATcp::tcGET:
@@ -453,17 +475,18 @@ void TcpServer::receive_()
         break;
 
     case ATcp::tcPOST:
-        // client->storeInputData();
-        client->setInputBuffer(arr.right(data_size));
+         client->storeInputData();
+//        client->setInputBuffer(arr.right(static_cast<int>(data_size)));
         break;
 
     case ATcp::tcPOSTGET:
-        // client->storeInputData();
-        client->setInputBuffer(arr.right(data_size));
+         client->storeInputData();
+//        client->setInputBuffer(arr.right(static_cast<int>(data_size)));
         client->sendDataToTcpClient();
         break;
 
     default:
+        return;
         break;
     }
 }

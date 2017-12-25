@@ -35,13 +35,13 @@ public:
     virtual qintptr getSocketDescriptor() const;
 
     ///
-    virtual bool checkSocket(QTcpSocket* sock) const;
+    virtual bool checkSocket(QTcpSocket* sock) const; // delete !!! не нужен, скорее всего, так как сокет постоянный
 
     ///
     void setDataEngine(AbstractDataEngine* engine);
 
     ///
-    void setInputBuffer(QByteArray buf); // FIXME - возможно заменить на следующий
+//    void setInputBuffer(QByteArray buf); // FIXME - возможно заменить на следующий delete !!!
 
     ///
     virtual void storeInputData() = 0; // на этот, так как сокет у клиента и он может из него читать

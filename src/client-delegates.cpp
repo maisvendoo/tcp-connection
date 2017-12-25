@@ -81,10 +81,10 @@ void AbstractClientDelegate::setDataEngine(AbstractDataEngine *engine)
 
 
 
-void AbstractClientDelegate::setInputBuffer(QByteArray buf)
-{
-    engine_->setInputData(std::move(buf));
-}
+//void AbstractClientDelegate::setInputBuffer(QByteArray buf)
+//{
+//    engine_->setInputData(std::move(buf));
+//}
 
 
 
@@ -164,13 +164,8 @@ ClientDelegate::~ClientDelegate()
 
 void ClientDelegate::storeInputData()
 {
-    if (socket_->state() != QTcpSocket::ListeningState)
+    if (!socket_->isOpen())
         return;
-
-    //QByteArray buf = socket_->readAll();
-
-//    if (buf.size() != sizeof(tcp_cmd_t_old)) // FIXME delete - перенести в сервер!
-//        return;
 
     engine_->setInputData(socket_->readAll());
 }

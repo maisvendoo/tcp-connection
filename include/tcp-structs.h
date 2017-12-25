@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <QByteArray>
+#include <QTcpSocket>
 
 
 constexpr size_t TCP_BUFFER_SIZE = 1024;
@@ -40,7 +41,7 @@ struct tcp_cmd_t
     size_t           bufferSize;
     QByteArray       buffer;
 
-    static const size_t INFO_SIZE = sizeof(command) + sizeof(bufferSize);
+    static const size_t INFO_SIZE = sizeof(ATcp::TcpCommand) + sizeof(size_t);
 
     tcp_cmd_t()
         : command(ATcp::tcZERO)
@@ -51,7 +52,7 @@ struct tcp_cmd_t
 
     void setData(const char* _dat, size_t _len)
     {
-        buffer = std::move(QByteArray(_dat, _len));
+        buffer = std::move(QByteArray(_dat, static_cast<int>(_len)));
         bufferSize = buffer.size();
     }
 
@@ -65,7 +66,8 @@ struct tcp_cmd_t
 
     QByteArray toByteArray()
     {
-        QByteArray buf(sizeof(ATcp::TcpCommand) + sizeof(size_t) + bufferSize,
+        QByteArray buf(static_cast<int>(sizeof(ATcp::TcpCommand) +
+                                        sizeof(size_t) + bufferSize),
                        Qt::Uninitialized);
 
         ptrdiff_t offset = 0u;
@@ -78,23 +80,47 @@ struct tcp_cmd_t
         return buf;
     }
 
-    static bool chechBufferSize(QByteArray &_arr)
+//    static bool chechBufferSize(QByteArray &_arr)
+//    {
+//        return static_cast<size_t>(_arr.size()) >= INFO_SIZE;
+//    }
+
+    static bool validInfoSize(QTcpSocket* _sock)
     {
-        return static_cast<size_t>(_arr.size()) >= INFO_SIZE;
+        return static_cast<size_t>(_sock->size()) >= INFO_SIZE;
     }
 
-    static ATcp::TcpCommand extractCommand(QByteArray &_arr)
+//    static ATcp::TcpCommand extractCommand(QByteArray &_arr)
+//    {
+//        ATcp::TcpCommand tmp = ATcp::tcZERO;
+//        memcpy(&tmp, _arr.data(), sizeof(ATcp::TcpCommand));
+//        return tmp;
+//    }
+
+    static ATcp::TcpCommand extractCommand(QTcpSocket *_sock)
     {
         ATcp::TcpCommand tmp = ATcp::tcZERO;
-        memcpy(&tmp, _arr.data(), sizeof(ATcp::TcpCommand));
+        _sock->read(reinterpret_cast<char*>(&tmp), sizeof(ATcp::TcpCommand));
         return tmp;
     }
 
-    static size_t extractBufferSize(QByteArray &_arr)
+//    static size_t extractBufferSize(QByteArray &_arr)
+//    {
+//        size_t tmp = 0u;
+//        memcpy(&tmp, _arr.data() + sizeof(ATcp::TcpCommand), sizeof(size_t));
+//        return tmp;
+//    }
+    static size_t extractBufferSize(QTcpSocket *_sock)
     {
         size_t tmp = 0u;
-        memcpy(&tmp, _arr.data() + sizeof(ATcp::TcpCommand), sizeof(size_t));
+        _sock->read(reinterpret_cast<char*>(&tmp), sizeof(size_t));
         return tmp;
+    }
+
+    static bool validBufferSize(size_t _bufSz, QTcpSocket* _sock)
+    {
+        size_t zuh = _sock->size();
+        return _bufSz == static_cast<size_t>(_sock->size());
     }
 };
 

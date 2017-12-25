@@ -51,6 +51,9 @@ public:
     ///
     void setEngineDefiner(AbstractEngineDefiner *definer);
 
+    ///
+    AbstractClientDelegate* getClient(QString clientName);
+
 
 signals:
 
