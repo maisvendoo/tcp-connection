@@ -23,11 +23,47 @@
 class QTcpSocket;
 class AbstractDataEngine;
 
+class AbstractClientDelegate;
+
+
 #if defined(TCPCONNECTION_LIB)
     #define DELEGATE_EX Q_DECL_EXPORT
 #else
     #define DELEGATE_EX Q_DECL_IMPORT
 #endif
+
+
+/*!
+ * \class ClientFace
+ * \brief Класс предоставляющий только необходимую часть интерфейса делегата
+ */
+class DELEGATE_EX ClientFace Q_DECL_FINAL : public QObject
+{
+    Q_OBJECT
+
+public:
+    ///
+    ClientFace(AbstractClientDelegate* delegate, QObject* parent = Q_NULLPTR);
+
+    ///
+    QString getName() const;
+
+    ///
+    quintptr getId() const;
+
+    ///
+    QByteArray getInputBuffer() const;
+
+
+signals:
+    ///
+    void dataReceived(QByteArray data);
+
+
+private:
+    //
+    AbstractClientDelegate* delegate_;
+};
 
 
 /*!
@@ -43,6 +79,9 @@ public:
     AbstractClientDelegate(QObject* parent = Q_NULLPTR);
     /// Деструктор
     virtual ~AbstractClientDelegate();
+
+    ///
+    ClientFace* face();
 
     /// Вернуть имя
     QString getName() const;
@@ -81,6 +120,8 @@ signals:
 
 
 protected:
+    //
+    ClientFace* face_;
     // Имя делегата
     QString name_; ///< Имя делегата
     // Дескриптор сокета

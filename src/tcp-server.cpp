@@ -114,9 +114,17 @@ void TcpServer::setEngineDefiner(AbstractEngineDefiner *definer)
 //-----------------------------------------------------------------------------
 // Вернуть клиента по имени
 //-----------------------------------------------------------------------------
-AbstractClientDelegate *TcpServer::getClient(QString clientName)
+//AbstractClientDelegate *TcpServer::getClient(QString clientName)
+//{
+//    return authorizedClients_.value(clientName, dummyClient_);
+//}
+
+
+
+
+ClientFace *TcpServer::getClient(QString clientName)
 {
-    return authorizedClients_.value(clientName, dummyClient_);
+    return authorizedClients_.value(clientName, dummyClient_)->face();
 }
 
 
@@ -189,7 +197,7 @@ void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray name)
     emit logPrint(ATcp::sc_OK_CLIENT_AUTHORIZED,
                   newName % ":" % QString::number(clnt->getId()));
 
-    emit clientAuthorized(clnt);
+    emit clientAuthorized(clnt->face());
 }
 
 

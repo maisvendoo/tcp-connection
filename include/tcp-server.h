@@ -24,6 +24,7 @@
 class QTcpSocket;
 
 class AbstractClientDelegate;
+class ClientFace;
 class DummyDelegate;
 class AbstractEngineDefiner;
 
@@ -66,7 +67,10 @@ public:
     void setEngineDefiner(AbstractEngineDefiner *definer);
 
     /// Вернуть клиента по имени
-    AbstractClientDelegate* getClient(QString clientName);
+//    AbstractClientDelegate* getClient(QString clientName);
+
+    ///
+    ClientFace* getClient(QString clientName);
 
     /// Включить/отключить класс делегата-пустышки
     void enableDummy(bool enabled = true);
@@ -74,7 +78,8 @@ public:
 
 signals:
     /// Сигнал успешной авторизации клиента
-    void clientAuthorized(AbstractClientDelegate* clDel);
+    //void clientAuthorized(AbstractClientDelegate* clDel);
+    void clientAuthorized(ClientFace* clFace);
 
     /// Печать данных в лог
     void logPrint(ATcp::ServerCodes logId, QString msg = "");
