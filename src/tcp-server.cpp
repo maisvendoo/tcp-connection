@@ -112,16 +112,8 @@ void TcpServer::setEngineDefiner(AbstractEngineDefiner *definer)
 
 
 //-----------------------------------------------------------------------------
-// Вернуть клиента по имени
+// Вернуть доступную часть интерфейса клиента по имени
 //-----------------------------------------------------------------------------
-//AbstractClientDelegate *TcpServer::getClient(QString clientName)
-//{
-//    return authorizedClients_.value(clientName, dummyClient_);
-//}
-
-
-
-
 ClientFace *TcpServer::getClient(QString clientName)
 {
     return authorizedClients_.value(clientName, dummyClient_)->face();
@@ -324,6 +316,8 @@ void TcpServer::clientDisconnected_()
 
     emit logPrint(ATcp::sc_OK_CLIENT_DISCONNECTED,
                   client->getName() % ":" % QString::number(client->getId()));
+
+    emit clientAboutToDisconnect(client->face());
 }
 
 

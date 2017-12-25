@@ -62,6 +62,14 @@ QByteArray ClientFace::getInputBuffer() const
 
 
 
+void ClientFace::setOutputBuffer(QByteArray arr)
+{
+    delegate_->setOutputBuffer(arr);
+}
+
+
+
+
 /******************************************************************************
  *  Данный класс является базовым классом для реально используемых делегатов и
  *  содержит общий функционал и интерфейс.
@@ -77,8 +85,8 @@ AbstractClientDelegate::AbstractClientDelegate(QObject *parent)
     , socket_(Q_NULLPTR)
     , engine_(Q_NULLPTR)
 {
-    connect(this, SIGNAL(dataReceived(QByteArray)),
-            face_, SIGNAL(dataReceived(QByteArray)));
+//    connect(this, SIGNAL(dataReceived(QByteArray)),
+//            face_, SIGNAL(dataReceived(QByteArray)));
 }
 
 
@@ -98,6 +106,9 @@ AbstractClientDelegate::~AbstractClientDelegate()
 
 
 
+//-----------------------------------------------------------------------------
+// Вернуть указатель на доступную часть интерфейса
+//-----------------------------------------------------------------------------
 ClientFace *AbstractClientDelegate::face()
 {
     return face_;
@@ -121,6 +132,11 @@ QString AbstractClientDelegate::getName() const
 void AbstractClientDelegate::setName(QString name)
 {
     name_ = std::move(name);
+}
+
+void AbstractClientDelegate::remindName()
+{
+    name_ = socket_->readAll();
 }
 
 
@@ -293,7 +309,7 @@ void ClientDelegate::storeInputData()
     // Читаем остатки данных из сокета
     engine_->setInputData(socket_->readAll());
     // Оповещаем о приёме данных
-    emit dataReceived(engine_->getInputBuffer());
+    emit face_->dataReceived(engine_->getInputBuffer());
 }
 
 

@@ -66,11 +66,8 @@ public:
     /// Установить класс определения механизма подготовки данных клиентов
     void setEngineDefiner(AbstractEngineDefiner *definer);
 
-    /// Вернуть клиента по имени
-//    AbstractClientDelegate* getClient(QString clientName);
-
-    ///
-    ClientFace* getClient(QString clientName);
+    /// Вернуть доступную часть интерфейса клиента по имени
+    ClientFace *getClient(QString clientName);
 
     /// Включить/отключить класс делегата-пустышки
     void enableDummy(bool enabled = true);
@@ -78,8 +75,10 @@ public:
 
 signals:
     /// Сигнал успешной авторизации клиента
-    //void clientAuthorized(AbstractClientDelegate* clDel);
     void clientAuthorized(ClientFace* clFace);
+
+    /// Сигнал при отключении клиента
+    void clientAboutToDisconnect(ClientFace* clFace);
 
     /// Печать данных в лог
     void logPrint(ATcp::ServerCodes logId, QString msg = "");

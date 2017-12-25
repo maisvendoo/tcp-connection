@@ -54,6 +54,9 @@ public:
     ///
     QByteArray getInputBuffer() const;
 
+    ///
+    void setOutputBuffer(QByteArray arr);
+
 
 signals:
     ///
@@ -80,14 +83,15 @@ public:
     /// Деструктор
     virtual ~AbstractClientDelegate();
 
-    ///
-    ClientFace* face();
+    /// Вернуть указатель на доступную часть интерфейса
+    ClientFace *face();
 
     /// Вернуть имя
     QString getName() const;
 
     /// Установить имя
-    virtual void setName(QString name);
+    virtual void setName(QString name); // delete заменить на следующий
+    virtual void remindName();
 
     /// Установить сокет
     virtual void setSocket(QTcpSocket* sock);
