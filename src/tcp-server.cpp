@@ -15,7 +15,7 @@
 TcpServer::TcpServer(QObject *parent)
     : QTcpServer(parent)
     , engineDefiner_(new NullDataEngineDefiner())
-    , dummyClient_(new DummyClientDelegate())
+    , dummyClient_(new DummyDelegate())
 {
 //    this->port = port;
 //    is_started = false;
@@ -80,14 +80,18 @@ void TcpServer::start(quint16 port)
     {
         if (listen(QHostAddress::Any, port))
         {
-            QString msg("OK: TCP-сервер запущен на порту ");
-            msg.append(QString::number(port));
-            emit logPrint(msg);
+//            QString msg("OK: TCP-сервер запущен на порту ");
+//            msg.append(QString::number(port));
+//            emit logPrint(msg);
+
+            emit logPrint(ATcp::OK_SERVER_STARTED, QString::number(port));
         }
         else
         {
-            QString msg("ERROR: сервер не запущен");
-            emit logPrint(msg);
+//            QString msg("ERROR: сервер не запущен");
+//            emit logPrint(msg);
+
+            emit logPrint(ATcp::ER_SERVER_NOT_STARTED, QString::number(port));
         }
     }
 }
@@ -161,16 +165,21 @@ void TcpServer::setEngineDefiner(AbstractEngineDefiner *&definer)
 {
     if (engineDefiner_)
         delete engineDefiner_;
+
     engineDefiner_ = std::move(definer);
 }
 
 
 
 
-void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray data)
+void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray name)
 {
-    QString newName(data);
+    QString newName(name);
     if (authorizedClients_.contains(newName))
+    {
+        emit logPrint(ATcp::ER_CLIENT_NAME_DUPLICATE, clnt->getName());
+    }
+    else
     {
         clnt->setName(newName);
         engineDefiner_->setDataEngine(clnt);
@@ -178,10 +187,6 @@ void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray data)
         clnt->sendAuthorized();
 
         emit logPrint(ATcp::OK_CLIENT_AUTHORIZED, clnt->getName());
-    }
-    else
-    {
-        emit logPrint(ATcp::ER_CLIENT_NAME_DUPLICATE, clnt->getName());
     }
 }
 
@@ -202,50 +207,25 @@ void TcpServer::authorizeClient_(AbstractClientDelegate *clnt, QByteArray data)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-client_t* TcpServer::getClientByName_(QString name)
-{
-    QMap<int, client_t *>::iterator it;
+//client_t* TcpServer::getClientByName_(QString name)
+//{
+//    QMap<int, client_t *>::iterator it;
 
-    for (it = clients_old.begin(); it != clients_old.end(); )
-    {
-        if (it.value()->name == name) // FIXME - сделать поиск по другому QMap
-        {
-            return clients_old[it.key()];
-        }
-        else
-        {
-            ++it;
-        }
-    }
-    this->isListening();
+//    for (it = clients_old.begin(); it != clients_old.end(); )
+//    {
+//        if (it.value()->name == name) // FIXME - сделать поиск по другому QMap
+//        {
+//            return clients_old[it.key()];
+//        }
+//        else
+//        {
+//            ++it;
+//        }
+//    }
+//    this->isListening();
 
-    return Q_NULLPTR;
-}
-
-
-
-
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
-client_t* TcpServer::getClientBySocket_(QTcpSocket *socket)
-{
-    QMap<int, client_t *>::iterator it;
-
-    for (it = clients_old.begin(); it != clients_old.end(); )
-    {
-        if (it.value()->socket == socket)
-        {
-            return clients_old[it.key()];
-        }
-        else
-        {
-            ++it;
-        }
-    }
-
-    return Q_NULLPTR;
-}
+//    return Q_NULLPTR;
+//}
 
 
 
@@ -253,23 +233,48 @@ client_t* TcpServer::getClientBySocket_(QTcpSocket *socket)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-QString TcpServer::clientNameFromCmd_(client_cmd_t &cmd)
-{
-    // Создаём буфер нужного размера и копируем данные
-    char* buffName = new char[cmd.data_size + 1];
+//client_t* TcpServer::getClientBySocket_(QTcpSocket *socket)
+//{
+//    QMap<int, client_t *>::iterator it;
 
-    memset(buffName, 0, cmd.data_size + 1);
+//    for (it = clients_old.begin(); it != clients_old.end(); )
+//    {
+//        if (it.value()->socket == socket)
+//        {
+//            return clients_old[it.key()];
+//        }
+//        else
+//        {
+//            ++it;
+//        }
+//    }
 
-    memcpy(buffName, cmd.data, cmd.data_size);
+//    return Q_NULLPTR;
+//}
 
-    // Создаём QСтроку на основе буффера
-    QString result(buffName);
 
-    // Удаляем буффер
-    delete[] buffName;
 
-    return result;
-}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+//QString TcpServer::clientNameFromCmd_(client_cmd_t &cmd)
+//{
+//    // Создаём буфер нужного размера и копируем данные
+//    char* buffName = new char[cmd.data_size + 1];
+
+//    memset(buffName, 0, cmd.data_size + 1);
+
+//    memcpy(buffName, cmd.data, cmd.data_size);
+
+//    // Создаём QСтроку на основе буффера
+//    QString result(buffName);
+
+//    // Удаляем буффер
+//    delete[] buffName;
+
+//    return result;
+//}
 
 
 
@@ -313,24 +318,24 @@ QString TcpServer::clientNameFromCmd_(client_cmd_t &cmd)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-void TcpServer::clientConnection_old()
-{
-    client_t *client = new client_t();
+//void TcpServer::clientConnection_old()
+//{
+//    client_t *client = new client_t();
 
-    client->socket = nextPendingConnection();
-    int client_id = client->socket->socketDescriptor();
+//    client->socket = nextPendingConnection();
+//    int client_id = client->socket->socketDescriptor();
 
-    clients_old.insert(client_id, client);
+//    clients_old.insert(client_id, client);
 
-    connect(client->socket, SIGNAL(readyRead()),
-            this, SLOT(receive_old()));
+//    connect(client->socket, SIGNAL(readyRead()),
+//            this, SLOT(receive_old()));
 
-    connect(client->socket, SIGNAL(disconnected()),
-            this, SLOT(clientDisconnected_old()));
+//    connect(client->socket, SIGNAL(disconnected()),
+//            this, SLOT(clientDisconnected_old()));
 
-    QString msg = "OK: Подключен клиент: id = " + QString::number(client_id);
-    emit logPrint(msg);
-}
+//    QString msg = "OK: Подключен клиент: id = " + QString::number(client_id);
+//    emit logPrint(msg);
+//}
 
 
 
@@ -351,9 +356,7 @@ void TcpServer::clientConnection_()
     connect(sock, SIGNAL(disconnected()),
             this, SLOT(clientDisconnected_()));
 
-    QString msg("OK: Подключен клиент: id = ");
-    msg.append(QString::number(client_id));
-    emit logPrint(msg);
+    emit logPrint(ATcp::OK_NEW_CLIENT_CONNECTED, QString::number(client_id));
 }
 
 
@@ -366,7 +369,9 @@ void TcpServer::onAcceptError(QAbstractSocket::SocketError error)
 {
     Q_UNUSED(error);
 
-    emit logPrint(errorString());
+//    emit logPrint(errorString());
+
+    emit logPrint(ATcp::ER_SERVER_INTERNAL_ERROR, errorString());
 }
 
 
@@ -375,74 +380,83 @@ void TcpServer::onAcceptError(QAbstractSocket::SocketError error)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-void TcpServer::receive_old()
-{
-    QTcpSocket *socket = (QTcpSocket *) sender();
+//void TcpServer::receive_old()
+//{
+//    QTcpSocket *socket = (QTcpSocket *) sender();
 
-    QByteArray buff = socket->readAll();
+//    QByteArray buff = socket->readAll();
 
-    client_cmd_t cmd;
+//    client_cmd_t cmd;
 
-    int size = buff.size();
+//    int size = buff.size();
 
-    if ( size == sizeof(client_cmd_t))
-    {
-        memcpy(&cmd, buff.data(), sizeof(client_cmd_t));
+//    if ( size == sizeof(client_cmd_t))
+//    {
+//        memcpy(&cmd, buff.data(), sizeof(client_cmd_t));
 
-        parseCommand(socket, cmd);
-    }
-}
+//        parseCommand(socket, cmd);
+//    }
+//}
 
 
 
 
 void TcpServer::receive_()
 {
+    //
     QTcpSocket* sock = qobject_cast<QTcpSocket*>(sender());
 
     QByteArray arr = sock->readAll();
 
-    if (static_cast<size_t>(arr.size()) < sizeof(TcpCommand) + sizeof(size_t))
+    //
+    size_t infoDataSize = sizeof(ATcp::TcpCommand) + sizeof(size_t);
+    if (static_cast<size_t>(arr.size()) < infoDataSize)
         return;
 
-    TcpCommand cmd = tcZERO;
-    memcpy(&cmd, arr.data(), sizeof(TcpCommand));
+    //
+    ATcp::TcpCommand cmd = ATcp::tcZERO;
+    memcpy(&cmd, arr.data(), sizeof(ATcp::TcpCommand));
 
-    ptrdiff_t offset = sizeof(TcpCommand);
+    //
+    ptrdiff_t offset = sizeof(ATcp::TcpCommand);
 
     size_t data_size = 0;
     memcpy(&data_size, arr.data() + offset, sizeof(size_t));
 
+    //
     offset += sizeof(size_t);
 
     if (data_size != static_cast<size_t>(arr.size()) - offset)
         return;
 
-    AbstractClientDelegate* client = clients_.value(sock->socketDescriptor(),
-                                                    dummyClient_);
+    //
+    quintptr cl_id = sock->socketDescriptor();
+    AbstractClientDelegate* client = clients_.value(cl_id, dummyClient_);
 
+    //
     switch (cmd)
     {
-    case tcZERO:
+    case ATcp::tcZERO:
         return;
         break;
 
-    case tcAUTHORIZATION:
+    case ATcp::tcAUTHORIZATION:
+        emit logPrint(ATcp::IN_AUTHORIZATION_REQUEST, QString::number(cl_id));
         authorizeClient_(client, arr.right(data_size));
         break;
 
-    case tcGET:
+    case ATcp::tcGET:
         client->sendDataToTcpClient();
         break;
 
-    case tcPOST:
+    case ATcp::tcPOST:
         // client->storeInputData();
-        client->setInputBuffer(arr);
+        client->setInputBuffer(arr.right(data_size));
         break;
 
-    case tcPOSTGET:
+    case ATcp::tcPOSTGET:
         // client->storeInputData();
-        client->setInputBuffer(arr);
+        client->setInputBuffer(arr.right(data_size));
         client->sendDataToTcpClient();
         break;
 
@@ -457,33 +471,53 @@ void TcpServer::receive_()
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-void TcpServer::clientDisconnected_old()
-{
-    QTcpSocket* socket = (QTcpSocket*) sender();
-
-    QMap<int, client_t*>::iterator it;
+//void TcpServer::clientDisconnected_old()
+//{
+//    QMap<int, client_t*>::iterator it;
 
 
 //    for (it = clients.begin(); it != clients.end(); )
-    for (it = clients_old.begin(); it != clients_old.end(); ++it)
-    {
-        client_t* client = it.value();
+//    for (it = clients_old.begin(); it != clients_old.end(); ++it)
+//    {
+//        client_t* client = it.value();
 //        if (it.value()->socket == socket)
-        if (client->socket == socket)
-        {
-            // WARNING воможно не удаляется экземпляр клиента !!!
+//        if (client->socket == socket)
+//        {
 //            authorizedClients_.remove(it.value()->name);
-            authorizedClients_old.remove(client->name);
-            clients_old.remove(it.key());
+//            authorizedClients_old.remove(client->name);
+//            clients_old.remove(it.key());
 //            break;
-            delete client;
-            return;
-        }
+//            delete client;
+//            return;
+//        }
 //        else
 //        {
 //            ++it;
 //        }
-    }
+//    }
+//}
+
+
+
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void TcpServer::clientDisconnected_()
+{
+    QTcpSocket* sock = (QTcpSocket*) sender();
+
+    quintptr client_id = sock->socketDescriptor();
+
+    AbstractClientDelegate* client = clients_.value(client_id, Q_NULLPTR);
+
+    if (!client)
+        return;
+
+    clients_.remove(client_id);
+    authorizedClients_.remove(client->getName());
+
+    delete client;
 }
 
 
@@ -492,84 +526,84 @@ void TcpServer::clientDisconnected_old()
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-void TcpServer::parseCommand(QTcpSocket *socket, client_cmd_t cmd)
-{
-    client_t *client = getClientBySocket_(socket);
+//void TcpServer::parseCommand(QTcpSocket *socket, client_cmd_t cmd)
+//{
+//    client_t *client = getClientBySocket_(socket);
 
-    if (client == Q_NULLPTR)
-        return;
+//    if (client == Q_NULLPTR)
+//        return;
 
 
 
-    switch (cmd.id)
-    {
-        case AUTHORIZATION:
-        {
-            emit logPrint("Запрос авторизации от клиента");
+//    switch (cmd.id)
+//    {
+//        case AUTHORIZATION:
+//        {
+//            emit logPrint("Запрос авторизации от клиента");
 
-            client->name = clientNameFromCmd_(cmd);
-            client->is_connected = true;
-            defineClientDataPrepareEngine_(client);
+//            client->name = clientNameFromCmd_(cmd);
+//            client->is_connected = true;
+//            defineClientDataPrepareEngine_(client);
 
-            authorizedClients_old.insert(client->name, client);
+//            authorizedClients_old.insert(client->name, client);
 
-            QString msg = "Клиент " + client->name + " авторизован";
-            emit logPrint(msg);
+//            QString msg = "Клиент " + client->name + " авторизован";
+//            emit logPrint(msg);
 
-            client->sendAuthorized();
+//            client->sendAuthorized();
 
-            break;
-        }
+//            break;
+//        }
 
-        case GET_BLOK_DATA:
-        {
-            if (client->name == "BLOK")
-                client->send();
-            break;
-        }
+//        case GET_BLOK_DATA:
+//        {
+//            if (client->name == "BLOK")
+//                client->send();
+//            break;
+//        }
 
-        case GET_DISPLAY1_DATA:
-        {
-            if (client->name == "Display1")
-            {
-                client->setClientData(cmd);
-                client->send();
-            }
-            break;
-        }
+//        case GET_DISPLAY1_DATA:
+//        {
+//            if (client->name == "Display1")
+//            {
+//                client->setClientData(cmd);
+//                client->send();
+//            }
+//            break;
+//        }
 
-        case GET_DISPLAY2_DATA:
-        {
-            if (client->name == "Display2")
-            {
-                client->setClientData(cmd);
-                client->send();
-            }
-            break;
-        }
+//        case GET_DISPLAY2_DATA:
+//        {
+//            if (client->name == "Display2")
+//            {
+//                client->setClientData(cmd);
+//                client->send();
+//            }
+//            break;
+//        }
 
-        case GET_VIDEOSYSTEM_DATA:
-        {
-            if (client->name == "videosystem")
-            {
-                client->send();
-            }
-            break;
-        }
+//        case GET_VIDEOSYSTEM_DATA:
+//        {
+//            if (client->name == "videosystem")
+//            {
+//                client->send();
+//            }
+//            break;
+//        }
 
-        case LAUNCHER_COMMAND:
-        {
-            if (client->name == "launcher")
-            {
-                client->setClientData(cmd);
-                // Задел на будущие возможности launcher'а
-            }
-        }
+//        case LAUNCHER_COMMAND:
+//        {
+//            if (client->name == "launcher")
+//            {
+//                client->setClientData(cmd);
+//                // Задел на будущие возможности launcher'а
+//            }
+//        }
 
-        default:
-            break;
+//        default:
+//            break;
 
-    }
+//    }
 
-}
+//}
 

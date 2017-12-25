@@ -1,9 +1,8 @@
 // 29 11 2017
-#ifndef     TCPDATA_H
-#define     TCPDATA_H
+#ifndef     TCP_CLIENT_STRUCTS_H
+#define     TCP_CLIENT_STRUCTS_H
 
 #include    <QtGlobal>
-#include    <QMetaType>
 
 /*!
  *  \struct tcp_state_t
@@ -12,8 +11,6 @@
 //------------------------------------------------------------------------------
 //      Состояние клиента
 //------------------------------------------------------------------------------
-#pragma pack(push, 1)
-
 struct tcp_state_t
 {
     /// Счетчик переданных пакетов данных
@@ -27,9 +24,6 @@ struct tcp_state_t
     }
 };
 
-#pragma pack(pop)
-
-Q_DECLARE_METATYPE(tcp_state_t)
 
 /*!
  *  \struct tcp_config_t
@@ -60,4 +54,4 @@ struct tcp_config_t
     }
 };
 
-#endif // TCPDATA_H
+#endif // TCP_CLIENT_STRUCTS_H

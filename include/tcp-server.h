@@ -3,32 +3,23 @@
 #ifndef TCPSERVER_H
 #define TCPSERVER_H
 
-//#include <QObject>
 #include <QTcpServer>
-//#include    <QTcpSocket>
 #include <QMap>
 
 #include "a-tcp-namespace.h"
-#include "tcp-server-structs.h"
-
-//#include    "abstract-data-prepare-engine.h"
-//#include    "null-data-prepare-engine.h"
 
 class QTcpSocket;
 
 class AbstractClientDelegate;
-class DummyClientDelegate;
+class DummyDelegate;
 class AbstractEngineDefiner;
-
-struct tcp_cmd_t;
 
 
 #if defined(TCPCONNECTION_LIB)
-# define TCPSERVER_EXPORT Q_DECL_EXPORT
+    #define TCPSERVER_EXPORT Q_DECL_EXPORT
 #else
-# define TCPSERVER_EXPORT Q_DECL_IMPORT
+    #define TCPSERVER_EXPORT Q_DECL_IMPORT
 #endif
-
 
 
 /*!
@@ -38,13 +29,13 @@ struct tcp_cmd_t;
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-class TcpServer : public QTcpServer
+class TCPSERVER_EXPORT TcpServer : public QTcpServer
 {
     Q_OBJECT
 
 public:
 
-    TcpServer(QObject* parent = Q_NULLPTR); // move port to start()
+    TcpServer(QObject* parent = Q_NULLPTR);
     virtual ~TcpServer();
 
     /// Запуск сервера
@@ -81,36 +72,36 @@ private:
     AbstractEngineDefiner* engineDefiner_;
 
     /// Порт, на котором будет слушать сервер
-    quint16 port; // delete - можно запросить у базового класса
+//    quint16 port; // delete - можно запросить у базового класса
 
     /// Статус сервера
-    bool    is_started; // delete - можно запросить у базового класса
+//    bool    is_started; // delete - можно запросить у базового класса
 
     /// Список подключенных клиентов
-    QMap<int, client_t *> clients_old; // delete
+//    QMap<int, client_t *> clients_old; // delete
     QMap<qintptr, AbstractClientDelegate*> clients_;
 
     /// Список авторизованных клиентов
-    QMap<QString, client_t*> authorizedClients_old; // delete
+//    QMap<QString, client_t*> authorizedClients_old; // delete
     QMap<QString, AbstractClientDelegate*> authorizedClients_;
 
     //
-    DummyClientDelegate* dummyClient_;
+    DummyDelegate* dummyClient_;
 
     ///
-    void authorizeClient_(AbstractClientDelegate* clnt, QByteArray data);
+    void authorizeClient_(AbstractClientDelegate* clnt, QByteArray name);
 
     ///
-    client_t* getClientByName_(QString name); // delete
-    AbstractClientDelegate* getClientByName_(QString name);
+//    client_t* getClientByName_(QString name); // delete
+//    AbstractClientDelegate* getClientByName_(QString name);
 
     ///
-    client_t* getClientBySocket_(QTcpSocket* socket); // delete
-    AbstractClientDelegate* getClientBySocket_(QTcpSocket* socket);
+//    client_t* getClientBySocket_(QTcpSocket* socket); // delete
+//    AbstractClientDelegate* getClientBySocket_(QTcpSocket* socket);
 
     ///
-    QString clientNameFromCmd_(client_cmd_t &cmd); // delete
-    QString clientNameFromCmd_(tcp_cmd_t &cmd);
+//    QString clientNameFromCmd_(client_cmd_t &cmd); // delete
+//    QString clientNameFromCmd_(tcp_cmd_t &cmd);
 
     ///
     //void defineClientDataPrepareEngine_(client_t* client);
@@ -119,21 +110,22 @@ private:
 private slots:
 
     /// Прием соединения клиентов
-    void clientConnection_old();
+//    void clientConnection_old();
     void clientConnection_();
 
     /// Обработка ошибок соединений
     void onAcceptError(QAbstractSocket::SocketError error);
 
     /// Прием данных от клиентов
-    void receive_old();
+    //void receive_old();
     void receive_();
 
     /// Обработка отключения клиентов
-    void clientDisconnected_old();
+//    void clientDisconnected_old();
+    void clientDisconnected_();
 
     /// Обработка команд клиентов
-    void parseCommand(QTcpSocket *socket, client_cmd_t cmd); // можно сделать все в receive
+    //void parseCommand(QTcpSocket *socket, client_cmd_t cmd); // можно сделать все в receive
 
 };
 

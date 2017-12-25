@@ -5,11 +5,12 @@
 
 #include	<QtGlobal>
 #include    <QObject>
-#include    <QTcpSocket>
+//#include    <QTcpSocket>
 #include    <QDataStream>
-#include    <QMetaType>
+//#include    <QMetaType>
 
 class QTimer;
+class QTcpSocket;
 
 #include    "tcp-client-structs.h"
 
@@ -27,12 +28,11 @@ class QTimer;
 //-----------------------------------------------------------------------------
 //	Класс, обслуживающий клиентское TCP/IP-соединение
 //-----------------------------------------------------------------------------
-class TCPCLIENT_EXPORT TcpClient final : public QObject
+class TCPCLIENT_EXPORT TcpClient Q_DECL_FINAL : public QObject
 {
     Q_OBJECT
 
 public:
-
     /// Конструктор и деструктор
     explicit TcpClient();
     ~TcpClient();
@@ -47,23 +47,21 @@ public:
     void start();
 
     ///
-    const tcp_config_t getConfig();
+    const tcp_config_t getConfig() const;
 
 
 public slots:
-
     /// Cоединение с сервером
     void connectToServer();
 
     /// Передача данных серверу
-    void sendToServer(QByteArray &&send_data);
+    void sendToServer(QByteArray send_data);
 
     ///
     void connectArrayPtr(QByteArray* &arrPtr);
 
 
 signals:
-
     ///
     void connectedToServer();
 
@@ -75,7 +73,6 @@ signals:
 
 
 public slots:
-
     /// Прием данных от сервера
     void receive();
 
@@ -87,7 +84,6 @@ public slots:
 
 
 protected:
-
     /// Клиентский сокет
     QTcpSocket      *socket;
 
@@ -105,15 +101,13 @@ protected:
 
 
 private:
-
     ///
     QTimer* timerConnector_;
 
-private slots:
 
+private slots:
     ///
     void onTimerConnector();
-
 
 };
 

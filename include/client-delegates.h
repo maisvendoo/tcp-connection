@@ -7,7 +7,14 @@
 class QTcpSocket;
 class AbstractDataEngine;
 
-class AbstractClientDelegate
+#if defined(TCPCONNECTION_LIB)
+    #define DELEGATE_EX Q_DECL_EXPORT
+#else
+    #define DELEGATE_EX Q_DECL_IMPORT
+#endif
+
+
+class DELEGATE_EX AbstractClientDelegate
 {
 public:
     ///
@@ -64,13 +71,13 @@ protected:
 
 
 
-class DummyClientDelegate Q_DECL_FINAL : public AbstractClientDelegate
+class DELEGATE_EX DummyDelegate Q_DECL_FINAL : public AbstractClientDelegate
 {
 public:
     ///
-    DummyClientDelegate();
+    DummyDelegate();
     ///
-    ~DummyClientDelegate();
+    ~DummyDelegate();
 
     ///
     void setName(QString name) Q_DECL_OVERRIDE;
@@ -94,7 +101,7 @@ public:
 
 
 
-class ClientDelegate Q_DECL_FINAL : public AbstractClientDelegate
+class DELEGATE_EX ClientDelegate Q_DECL_FINAL : public AbstractClientDelegate
 {
 public:
     ///

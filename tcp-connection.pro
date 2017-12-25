@@ -17,7 +17,6 @@ CONFIG(debug, debug|release) {
 }
 
 INCLUDEPATH += ./include
-INCLUDEPATH += ../additional/include
 
 
 HEADERS += $$files(./include/*.h)

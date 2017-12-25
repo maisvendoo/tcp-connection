@@ -7,7 +7,14 @@
 class AbstractDataEngine;
 class AbstractClientDelegate;
 
-class AbstractEngineDefiner
+#if defined(TCPCONNECTION_LIB)
+    #define ENGINE_DEFINER_EX Q_DECL_EXPORT
+#else
+    #define ENGINE_DEFINER_EX Q_DECL_IMPORT
+#endif
+
+
+class ENGINE_DEFINER_EX AbstractEngineDefiner
 {
 public:
     ///

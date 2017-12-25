@@ -1,10 +1,11 @@
 // 29 11 2017
 
 #include "tcp-client.h"
-#include "tcp-structs.h"
-//#include    "tcp-server-structs.h"
 
 #include    <QTimer>
+#include    <QTcpSocket>
+
+#include "tcp-structs.h"
 
 //------------------------------------------------------------------------------
 //
@@ -72,7 +73,7 @@ void TcpClient::start()
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-const tcp_config_t TcpClient::getConfig()
+const tcp_config_t TcpClient::getConfig() const
 {
     return tcp_config;
 }
@@ -95,7 +96,7 @@ void TcpClient::connectToServer()
 //------------------------------------------------------------------------------
 //  (слот) Передача данных серверу
 //------------------------------------------------------------------------------
-void TcpClient::sendToServer(QByteArray &&send_data)
+void TcpClient::sendToServer(QByteArray send_data)
 {
     socket->write(send_data);
     socket->flush();

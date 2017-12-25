@@ -21,11 +21,10 @@
 //-----------------------------------------------------------------------------
 // КОНСТРУКТОР
 //-----------------------------------------------------------------------------
-AbstractDataEngine::AbstractDataEngine(size_t inBufSize, size_t outBufSize)
+AbstractDataEngine::AbstractDataEngine()
     : QObject(Q_NULLPTR)
 {
-    inputBuffer_.reserve(inBufSize);
-    outputBuffer_.reserve(outBufSize);
+
 }
 
 
@@ -43,11 +42,11 @@ AbstractDataEngine::~AbstractDataEngine()
 //-----------------------------------------------------------------------------
 void AbstractDataEngine::setInputData(QByteArray inData)
 {
-    if (inData.size() == inputBuffer_.size())
-    {
-        memcpy(inputBuffer_.data(), inData.data(), inputBuffer_.size());
-    }
-    //inputBuffer_ = std::move(inData);
+//    if (inData.size() == inputBuffer_.size())
+//    {
+//        memcpy(inputBuffer_.data(), inData.data(), inputBuffer_.size());
+//    }
+    inputBuffer_ = std::move(inData);
 }
 
 
@@ -55,11 +54,11 @@ void AbstractDataEngine::setInputData(QByteArray inData)
 
 void AbstractDataEngine::setOutputBuffer(QByteArray outData)
 {
-    if (outData.size() == outputBuffer_.size())
-    {
-        memcpy(outputBuffer_.data(), outData.data(), outputBuffer_.size());
-    }
-//    outputBuffer_ = std::move(outData);
+//    if (outData.size() == outputBuffer_.size())
+//    {
+//        memcpy(outputBuffer_.data(), outData.data(), outputBuffer_.size());
+//    }
+    outputBuffer_ = std::move(outData);
 }
 
 
@@ -95,14 +94,12 @@ QByteArray AbstractDataEngine::getOutputData() const
  * \date 29/11/201
  */
 
-#include "null-data-engine.h"
-
 
 //-----------------------------------------------------------------------------
 // КОНСТРУКТОР
 //-----------------------------------------------------------------------------
 NullDataEngine::NullDataEngine()
-    : AbstractDataEngine(0, 0)
+    : AbstractDataEngine()
 {
 
 }

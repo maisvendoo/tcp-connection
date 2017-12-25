@@ -5,7 +5,7 @@
 #include <QTcpSocket>
 
 #include "abstract-data-engine.h"
-#include "tcp-structs.h"
+#include "tcp-structs.h" // delete ???
 
 
 AbstractClientDelegate::AbstractClientDelegate()
@@ -75,7 +75,7 @@ bool AbstractClientDelegate::checkSocket(QTcpSocket *sock) const
 
 void AbstractClientDelegate::setDataEngine(AbstractDataEngine *engine)
 {
-
+    engine_ = engine;
 }
 
 
@@ -98,46 +98,46 @@ QByteArray AbstractClientDelegate::getInputBuffer() const
 
 
 
-DummyClientDelegate::DummyClientDelegate()
+DummyDelegate::DummyDelegate()
 {
     name_ = "dummy";
     engine_ = new NullDataEngine();
 }
 
-DummyClientDelegate::~DummyClientDelegate()
+DummyDelegate::~DummyDelegate()
 {
     // Ничего не делать
 }
 
-void DummyClientDelegate::setName(QString name)
+void DummyDelegate::setName(QString name)
 {
     Q_UNUSED(name);
     // Ничего не делать
 }
 
-void DummyClientDelegate::setSocket(QTcpSocket *sock)
+void DummyDelegate::setSocket(QTcpSocket *sock)
 {
     Q_UNUSED(sock);
     // Ничего не делать
 }
 
-void DummyClientDelegate::storeInputData()
+void DummyDelegate::storeInputData()
 {
     // Ничего не делать
 }
 
-void DummyClientDelegate::setOutputBuffer(QByteArray buf)
+void DummyDelegate::setOutputBuffer(QByteArray buf)
 {
     Q_UNUSED(buf)
     // Ничего не делать
 }
 
-void DummyClientDelegate::sendAuthorized()
+void DummyDelegate::sendAuthorized()
 {
     // Ничего не делать
 }
 
-void DummyClientDelegate::sendDataToTcpClient()
+void DummyDelegate::sendDataToTcpClient()
 {
     // Ничего не делать
 }

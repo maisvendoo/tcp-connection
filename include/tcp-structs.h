@@ -19,7 +19,7 @@ struct tcp_cmd_t
     uint8_t          buffer[TCP_BUFFER_SIZE]; // попробовать перевести на вектор !!!
 
     tcp_cmd_t()
-        : command(tcZERO)
+        : command(ATcp::tcZERO)
         , data_size(0)
     {
 

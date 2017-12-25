@@ -19,20 +19,25 @@
 
 #include <QObject>
 #include <QByteArray>
-#include <tcp-structs.h>
 
-//#include "tcp-server-structs.h"
+
+#if defined(TCPCONNECTION_LIB)
+    #define DATA_ENGINE_EX Q_DECL_EXPORT
+#else
+    #define DATA_ENGINE_EX Q_DECL_IMPORT
+#endif
+
 
 /*!
  * \class AbstractDataPrepareEngine
  * \brief Реализация класса подготовки данных для отправки клиентам
  */
-class AbstractDataEngine : public QObject
+class DATA_ENGINE_EX AbstractDataEngine : public QObject
 {
     Q_OBJECT
 public:
     /// Конструктор
-    AbstractDataEngine(size_t inBufSize, size_t outBufSize);
+    AbstractDataEngine();
     ///
     ~AbstractDataEngine();
 
@@ -69,7 +74,7 @@ private:
  * \class NullDataPrepareEngine
  * \brief Реализация класса отсутствия подготовки данных
  */
-class NullDataEngine Q_DECL_FINAL : public AbstractDataEngine
+class DATA_ENGINE_EX NullDataEngine Q_DECL_FINAL : public AbstractDataEngine
 {
     Q_OBJECT
 public:
