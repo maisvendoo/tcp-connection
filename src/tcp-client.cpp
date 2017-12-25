@@ -7,13 +7,17 @@
 
 #include "tcp-structs.h"
 
+
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
 TcpClient::TcpClient()
+    : lastAuthResponse_(ATcp::ar_NO_RESONSE)
 {
 
 }
+
+
 
 //------------------------------------------------------------------------------
 //
@@ -22,6 +26,8 @@ TcpClient::~TcpClient()
 {
 
 }
+
+
 
 //------------------------------------------------------------------------------
 //  Инициализация клиента
@@ -54,6 +60,8 @@ void TcpClient::init(tcp_config_t tcp_config)
     connect(socket, SIGNAL(readyRead()), this, SLOT(receive()));
 }
 
+
+
 //------------------------------------------------------------------------------
 //  Проверка соединения
 //------------------------------------------------------------------------------
@@ -61,6 +69,8 @@ bool TcpClient::isConnected() const
 {
     return socket->state() == QTcpSocket::ConnectedState;
 }
+
+
 
 //------------------------------------------------------------------------------
 //  Запуск клиента
@@ -70,6 +80,8 @@ void TcpClient::start()
     timerConnector_->start();
 }
 
+
+
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
@@ -77,6 +89,8 @@ const tcp_config_t TcpClient::getConfig() const
 {
     return tcp_config;
 }
+
+
 
 //------------------------------------------------------------------------------
 //  (слот) Cоединение с сервером
@@ -93,6 +107,8 @@ void TcpClient::connectToServer()
                           QIODevice::ReadWrite);
 }
 
+
+
 //------------------------------------------------------------------------------
 //  (слот) Передача данных серверу
 //------------------------------------------------------------------------------
@@ -104,6 +120,8 @@ void TcpClient::sendToServer(QByteArray send_data)
     tcp_state.send_count++;
 }
 
+
+
 //------------------------------------------------------------------------------
 //  (слот) Прием данных от сервера
 //------------------------------------------------------------------------------
@@ -111,6 +129,8 @@ void TcpClient::connectArrayPtr(QByteArray *&arrPtr)
 {
     arrPtr = &incomingData_;
 }
+
+
 
 //------------------------------------------------------------------------------
 //
@@ -126,12 +146,38 @@ void TcpClient::receive()
     // Генерация сигнала об успешной авторизации
     if (tcp_state.recv_count == 1)
     {
-        if (strcmp(incomingData_.data(), AUTH_WORD) == 0)
+        ATcp::AuthResponse resp = ATcp::ar_NO_RESONSE;
+        memcpy(&resp, incomingData_.data(), sizeof(ATcp::AuthResponse));
+
+        lastAuthResponse_ = resp;
+        switch (resp)
         {
+        case ATcp::ar_AUTHORIZED:
             emit authorized();
+            emit logPrint(ATcp::cc_OK_AUTHOROZED, tcp_config.name);
+            break;
+
+        case ATcp::ar_NAME_DUPLICATE:
+            handleAuthError_(ATcp::cc_ER_NAME_DUPLICATE);
+            break;
+
+        case ATcp::ar_UNKNOWN_NAME:
+            handleAuthError_(ATcp::cc_ER_UNKNOWN_NAME);
+            break;
+
+        default:
+            lastAuthResponse_ = ATcp::ar_NO_RESONSE;
+            handleAuthError_(ATcp::cc_UNKNOWN_CODE);
+            break;
         }
+
+        return;
     }
+
+    emit dataReceived(incomingData_);
 }
+
+
 
 //------------------------------------------------------------------------------
 //  (слот) Обработка факта соединения с сервером
@@ -144,25 +190,16 @@ void TcpClient::onConnect()
     if (socket->isOpen())
     {      
         tcp_cmd_t cmd;
-        cmd.command = ATcp::tcAUTHORIZATION;
-        //cmd.bufferSize = tcp_config.name.toUtf8().size() + 1;;
-        //memcpy(cmd.buffer, tcp_config.name.toStdString().c_str(), cmd.bufferSize);
-        cmd.setData(tcp_config.name.toStdString().c_str(), tcp_config.name.size() + 1);
-
-
-//        client_cmd_t cmd;
-//        cmd.id = AUTHORIZATION;
-//        cmd.data_size = tcp_config.name.toUtf8().size() + 1;
-//        memcpy(cmd.data, tcp_config.name.toStdString().c_str(), cmd.data_size);
-
-//        QByteArray toSend = QByteArray::fromRawData((const char*) &cmd,
-//                                                    sizeof(client_cmd_t));
+        cmd.info.command = ATcp::tcAUTHORIZATION;
+        cmd.setData(tcp_config.name);
 
         sendToServer(cmd.toByteArray());
     }
 
     emit connectedToServer();
 }
+
+
 
 //------------------------------------------------------------------------------
 //  (слот) Обработка факта разрыва соединения с сервером
@@ -177,26 +214,31 @@ void TcpClient::onDisconnect()
     // Очищаем массив данных
     incomingData_ = QByteArray(0, Qt::Uninitialized);
 
-    timerConnector_->start();
+    //
+    switch (lastAuthResponse_)
+    {
+    //
+    case ATcp::ar_NO_RESONSE:
+    case ATcp::ar_AUTHORIZED:
+        timerConnector_->start();
+        break;
+
+    //
+    default:
+        break;
+    }
 }
 
-//------------------------------------------------------------------------------
-//  (слот) Послать состояние клиента другому классу
-//------------------------------------------------------------------------------
-//void TcpClient::sendTcpState(tcp_state_t *tcp_state)
-//{
-//    // Передаем наружу состояние клиента
-//    *tcp_state = this->tcp_state;
-//}
 
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
-//void TcpClient::sendData(QByteArray *recv_data)
-//{
-//    // Передаем наружу принятые данные
-//    *recv_data = this->incomingData_;
-//}
+
+
+void TcpClient::handleAuthError_(ATcp::ClientCodes _cl)
+{
+    emit authorizationDenied(lastAuthResponse_);
+    emit logPrint(_cl, tcp_config.name);
+    socket->disconnectFromHost();
+}
+
 
 
 //------------------------------------------------------------------------------

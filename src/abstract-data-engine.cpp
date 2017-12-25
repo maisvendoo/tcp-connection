@@ -42,10 +42,6 @@ AbstractDataEngine::~AbstractDataEngine()
 //-----------------------------------------------------------------------------
 void AbstractDataEngine::setInputData(QByteArray inData)
 {
-//    if (inData.size() == inputBuffer_.size())
-//    {
-//        memcpy(inputBuffer_.data(), inData.data(), inputBuffer_.size());
-//    }
     inputBuffer_ = std::move(inData);
 }
 
@@ -54,10 +50,6 @@ void AbstractDataEngine::setInputData(QByteArray inData)
 
 void AbstractDataEngine::setOutputBuffer(QByteArray outData)
 {
-//    if (outData.size() == outputBuffer_.size())
-//    {
-//        memcpy(outputBuffer_.data(), outData.data(), outputBuffer_.size());
-//    }
     outputBuffer_ = std::move(outData);
 }
 
@@ -72,7 +64,7 @@ QByteArray AbstractDataEngine::getInputBuffer() const
 
 
 
-QByteArray AbstractDataEngine::getOutputData() const
+QByteArray AbstractDataEngine::getOutputBuffer() const
 {
     return outputBuffer_;
 }

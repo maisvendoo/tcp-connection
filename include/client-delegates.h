@@ -2,7 +2,9 @@
 #ifndef CLIENT_DELEGATES_H
 #define CLIENT_DELEGATES_H
 
+#include <QObject>
 #include <QString>
+#include <a-tcp-namespace.h>
 
 class QTcpSocket;
 class AbstractDataEngine;
@@ -14,11 +16,13 @@ class AbstractDataEngine;
 #endif
 
 
-class DELEGATE_EX AbstractClientDelegate
+class DELEGATE_EX AbstractClientDelegate : public QObject
 {
+    Q_OBJECT
+
 public:
     ///
-    AbstractClientDelegate();
+    AbstractClientDelegate(QObject* parent = Q_NULLPTR);
     ///
     virtual ~AbstractClientDelegate();
 
@@ -32,19 +36,13 @@ public:
     virtual void setSocket(QTcpSocket* sock);
 
     ///
-    virtual qintptr getSocketDescriptor() const;
-
-    ///
-    virtual bool checkSocket(QTcpSocket* sock) const; // delete !!! не нужен, скорее всего, так как сокет постоянный
+    virtual qintptr getId() const;
 
     ///
     void setDataEngine(AbstractDataEngine* engine);
 
     ///
-//    void setInputBuffer(QByteArray buf); // FIXME - возможно заменить на следующий delete !!!
-
-    ///
-    virtual void storeInputData() = 0; // на этот, так как сокет у клиента и он может из него читать
+    virtual void storeInputData() = 0;
 
     ///
     virtual void setOutputBuffer(QByteArray buf) = 0;
@@ -53,15 +51,22 @@ public:
     QByteArray getInputBuffer() const;
 
     ///
-    virtual void sendAuthorized() = 0;
+    virtual void sendAuthorizationResponse(ATcp::AuthResponse resp) = 0;
 
     ///
     virtual void sendDataToTcpClient() = 0;
 
 
+signals:
+    ///
+    void dataReceived(QByteArray arr);
+
+
 protected:
     //
     QString name_;
+    //
+    qintptr localId_;
     //
     QTcpSocket* socket_;
     //
@@ -73,9 +78,11 @@ protected:
 
 class DELEGATE_EX DummyDelegate Q_DECL_FINAL : public AbstractClientDelegate
 {
+    Q_OBJECT
+
 public:
     ///
-    DummyDelegate();
+    DummyDelegate(QObject *parent = Q_NULLPTR);
     ///
     ~DummyDelegate();
 
@@ -92,7 +99,7 @@ public:
     void setOutputBuffer(QByteArray buf) Q_DECL_OVERRIDE;
 
     ///
-    void sendAuthorized() Q_DECL_OVERRIDE;
+    void sendAuthorizationResponse(ATcp::AuthResponse resp) Q_DECL_OVERRIDE;
 
     ///
     void sendDataToTcpClient() Q_DECL_OVERRIDE;
@@ -105,7 +112,7 @@ class DELEGATE_EX ClientDelegate Q_DECL_FINAL : public AbstractClientDelegate
 {
 public:
     ///
-    ClientDelegate();
+    ClientDelegate(QObject* parent = Q_NULLPTR);
     ///
     ~ClientDelegate();
 
@@ -116,7 +123,13 @@ public:
     void setOutputBuffer(QByteArray buf) Q_DECL_OVERRIDE;
 
     ///
-    void sendAuthorized() Q_DECL_OVERRIDE;
+//    void sendAuthorized() Q_DECL_OVERRIDE;
+
+    ///
+//    void sendDenied(ATcp::ServerLogs errId) Q_DECL_OVERRIDE;
+
+    ///
+    void sendAuthorizationResponse(ATcp::AuthResponse resp) Q_DECL_OVERRIDE;
 
     ///
     void sendDataToTcpClient() Q_DECL_OVERRIDE;

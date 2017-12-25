@@ -34,12 +34,16 @@ class TCPSERVER_EXPORT TcpServer : public QTcpServer
     Q_OBJECT
 
 public:
-
+    ///
     TcpServer(QObject* parent = Q_NULLPTR);
+    ///
     virtual ~TcpServer();
 
     /// Запуск сервера
     void start(quint16 port);
+
+    ///
+    void setPossibleClients(QStringList names);
 
     ///
     void setEngineDefiner(AbstractEngineDefiner *definer);
@@ -49,19 +53,24 @@ public:
 
 
 signals:
+    ///
+    void clientAuthorized(AbstractClientDelegate* clDel);
 
     /// Печать данных в лог
-    void logPrint(ATcp::ServerLogs, QString msg = "");
+    void logPrint(ATcp::ServerCodes logId, QString msg = "");
 
 
 private:
     //
     AbstractEngineDefiner* engineDefiner_;
 
-    /// Список подключенных клиентов
-    QMap<qintptr, AbstractClientDelegate*> clients_;
+    //
+    QStringList possibleClients_;
 
-    /// Список авторизованных клиентов
+    // Список подключенных клиентов
+    QMap<QTcpSocket*, AbstractClientDelegate*> newClients_;
+
+    // Список авторизованных клиентов
     QMap<QString, AbstractClientDelegate*> authorizedClients_;
 
     //
@@ -72,18 +81,17 @@ private:
 
 
 private slots:
-
     /// Прием соединения клиентов
     void clientConnection_();
-
-    /// Обработка ошибок соединений
-    void onAcceptError(QAbstractSocket::SocketError error);
 
     /// Прием данных от клиентов
     void receive_();
 
     /// Обработка отключения клиентов
     void clientDisconnected_();
+
+    /// Обработка ошибок соединений
+    void onAcceptError(QAbstractSocket::SocketError error);
 };
 
 #endif // TCPSERVER_H

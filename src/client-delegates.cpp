@@ -8,8 +8,10 @@
 #include "tcp-structs.h" // delete ???
 
 
-AbstractClientDelegate::AbstractClientDelegate()
-    : name_("")
+AbstractClientDelegate::AbstractClientDelegate(QObject *parent)
+    : QObject(parent)
+    , name_("")
+    , localId_(0)
     , socket_(Q_NULLPTR)
     , engine_(Q_NULLPTR)
 {
@@ -46,28 +48,15 @@ void AbstractClientDelegate::setName(QString name)
 void AbstractClientDelegate::setSocket(QTcpSocket *sock)
 {
     socket_ = sock;
+    localId_ = sock->socketDescriptor();
 }
 
 
 
 
-qintptr AbstractClientDelegate::getSocketDescriptor() const
+qintptr AbstractClientDelegate::getId() const
 {
-    if (socket_)
-        return socket_->socketDescriptor();
-
-    return 0;
-}
-
-
-
-
-bool AbstractClientDelegate::checkSocket(QTcpSocket *sock) const
-{
-    if (socket_ && sock)
-        return socket_ == sock;
-
-    return false;
+    return localId_;
 }
 
 
@@ -81,14 +70,6 @@ void AbstractClientDelegate::setDataEngine(AbstractDataEngine *engine)
 
 
 
-//void AbstractClientDelegate::setInputBuffer(QByteArray buf)
-//{
-//    engine_->setInputData(std::move(buf));
-//}
-
-
-
-
 QByteArray AbstractClientDelegate::getInputBuffer() const
 {
     return engine_->getInputBuffer();
@@ -98,7 +79,8 @@ QByteArray AbstractClientDelegate::getInputBuffer() const
 
 
 
-DummyDelegate::DummyDelegate()
+DummyDelegate::DummyDelegate(QObject* parent)
+    : AbstractClientDelegate(parent)
 {
     name_ = "dummy";
     engine_ = new NullDataEngine();
@@ -132,8 +114,9 @@ void DummyDelegate::setOutputBuffer(QByteArray buf)
     // Ничего не делать
 }
 
-void DummyDelegate::sendAuthorized()
+void DummyDelegate::sendAuthorizationResponse(ATcp::AuthResponse resp)
 {
+    Q_UNUSED(resp);
     // Ничего не делать
 }
 
@@ -146,7 +129,8 @@ void DummyDelegate::sendDataToTcpClient()
 
 
 
-ClientDelegate::ClientDelegate()
+ClientDelegate::ClientDelegate(QObject* parent)
+    : AbstractClientDelegate(parent)
 {
 
 }
@@ -168,6 +152,7 @@ void ClientDelegate::storeInputData()
         return;
 
     engine_->setInputData(socket_->readAll());
+    emit dataReceived(engine_->getInputBuffer());
 }
 
 
@@ -181,13 +166,24 @@ void ClientDelegate::setOutputBuffer(QByteArray buf)
 
 
 
-void ClientDelegate::sendAuthorized()
+void ClientDelegate::sendAuthorizationResponse(ATcp::AuthResponse resp)
 {
-    if (socket_->isOpen())
+    switch (resp)
     {
-        QByteArray arr(AUTH_WORD);
+
+    case ATcp::ar_AUTHORIZED:
+    case ATcp::ar_NAME_DUPLICATE:
+    case ATcp::ar_UNKNOWN_NAME:
+    {
+        QByteArray arr(reinterpret_cast<const char*>(&resp),
+                       sizeof(ATcp::AuthResponse));
         socket_->write(arr);
         socket_->flush();
+        break;
+    }
+
+    default:
+        break;
     }
 }
 

@@ -12,7 +12,8 @@
 class QTimer;
 class QTcpSocket;
 
-#include    "tcp-client-structs.h"
+#include "tcp-client-structs.h"
+#include "a-tcp-namespace.h"
 
 #if defined(TCPCONNECTION_LIB)
 # define TCPCLIENT_EXPORT Q_DECL_EXPORT
@@ -71,6 +72,15 @@ signals:
     ///
     void authorized();
 
+    ///
+    void authorizationDenied(ATcp::AuthResponse errId);
+
+    ///
+    void dataReceived(QByteArray inData);
+
+    ///
+    void logPrint(ATcp::ClientCodes logId, QString msg = "");
+
 
 public slots:
     /// Прием данных от сервера
@@ -99,10 +109,16 @@ protected:
     /// Данные, принятые от сервера
     QByteArray      incomingData_;
 
+    ///
+    ATcp::AuthResponse lastAuthResponse_;
+
 
 private:
     ///
     QTimer* timerConnector_;
+
+    ///
+    void handleAuthError_(ATcp::ClientCodes _cl);
 
 
 private slots:

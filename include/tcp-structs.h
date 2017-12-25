@@ -13,52 +13,79 @@
 
 struct tcp_cmd_t
 {
-    ATcp::TcpCommand command;
-    size_t           bufferSize;
-    QByteArray       buffer;
+#pragma pack(push, 1)
+    struct info_t
+    {
+        ATcp::TcpCommand command;
+        size_t bufferSize;
 
-    static const size_t INFO_SIZE = sizeof(ATcp::TcpCommand) + sizeof(size_t);
+        info_t()
+            : command(ATcp::tcZERO)
+            , bufferSize(0u)
+        {
 
-    //
+        }
+    };
+#pragma pack(pop)
+
+    info_t      info;
+    QByteArray  buffer;
+
+    static const size_t INFO_SIZE = sizeof(info_t);
+
+    // Конструктор
     tcp_cmd_t()
-        : command(ATcp::tcZERO)
-        , bufferSize(0u)
     {
 
+    }
+
+    //
+    void setData(const char* _null_term_str)
+    {
+        setData(std::move(QByteArray(_null_term_str)));
     }
 
     //
     void setData(const char* _dat, size_t _len)
     {
-        buffer = std::move(QByteArray(_dat, static_cast<int>(_len)));
-        bufferSize = buffer.size();
+        setData(std::move(QByteArray(_dat, static_cast<int>(_len))));
+    }
+
+    //
+    void setData(QString _dat)
+    {
+        setData(_dat.toLocal8Bit());
+    }
+
+    //
+    void setData(QByteArray _dat)
+    {
+        buffer = _dat;
+        info.bufferSize = buffer.size();
     }
 
     //
     template<typename T>
-    void setData(T _dat) // возвращать true в случае успеха
+    bool setData(T _dat)
     {
         if (std::is_trivially_copyable<T>::value)
         {
             buffer.resize(sizeof(T));
             memcpy(buffer.data(), &_dat, sizeof(T));
-            bufferSize = sizeof(T);
+            info.bufferSize = sizeof(T);
+            return true;
         }
+        return false;
     }
 
     //
     QByteArray toByteArray()
     {
-        QByteArray buf(static_cast<int>(sizeof(ATcp::TcpCommand) +
-                                        sizeof(size_t) + bufferSize),
+        QByteArray buf(static_cast<int>(INFO_SIZE + info.bufferSize),
                        Qt::Uninitialized);
 
-        ptrdiff_t offset = 0u;
-        memcpy(buf.data(), &command, sizeof command);
-        offset += sizeof command;
-        memcpy(buf.data() + offset, &bufferSize, sizeof bufferSize);
-        offset += sizeof bufferSize;
-        memcpy(buf.data() + offset, buffer.data(), bufferSize);
+        memcpy(buf.data(), &info, sizeof(info_t));
+        memcpy(buf.data() + INFO_SIZE, buffer.data(), info.bufferSize);
 
         return buf;
     }
@@ -70,18 +97,10 @@ struct tcp_cmd_t
     }
 
     //
-    static ATcp::TcpCommand extractCommand(QTcpSocket *_sock)
+    static info_t extractInfo(QTcpSocket *_sock)
     {
-        ATcp::TcpCommand tmp = ATcp::tcZERO;
-        _sock->read(reinterpret_cast<char*>(&tmp), sizeof(ATcp::TcpCommand));
-        return tmp;
-    }
-
-    //
-    static size_t extractBufferSize(QTcpSocket *_sock)
-    {
-        size_t tmp = 0u;
-        _sock->read(reinterpret_cast<char*>(&tmp), sizeof(size_t));
+        info_t tmp;
+        _sock->read(reinterpret_cast<char*>(&tmp), sizeof(info_t));
         return tmp;
     }
 

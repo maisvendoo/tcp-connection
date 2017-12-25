@@ -54,7 +54,7 @@ public:
     QByteArray getInputBuffer() const;
 
     ///
-    QByteArray getOutputData() const;
+    QByteArray getOutputBuffer() const;
 
 
 signals:
