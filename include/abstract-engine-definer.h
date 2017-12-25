@@ -5,6 +5,7 @@
 #include <qcompilerdetection.h>
 
 class AbstractDataEngine;
+class AbstractClientDelegate;
 
 class AbstractEngineDefiner
 {
@@ -15,7 +16,12 @@ public:
     virtual ~AbstractEngineDefiner();
 
     ///
-    virtual AbstractDataEngine* getDataEngine(QString name) = 0;
+    void setDataEngine(AbstractClientDelegate* client);
+
+
+protected:
+    ///
+    virtual AbstractDataEngine* getDataEngine_(QString name) = 0;
 };
 
 
@@ -28,7 +34,7 @@ public:
 
 protected:
     ///
-    AbstractDataEngine* getDataEngine(quint64 id) Q_DECL_OVERRIDE;
+    AbstractDataEngine* getDataEngine_(QString clientName) Q_DECL_OVERRIDE;
 };
 
 #endif // ABSTRACT_ENGINE_DEFINER_H

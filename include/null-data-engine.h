@@ -16,26 +16,26 @@
 #ifndef NULLDATAPREPAREENGINE_H
 #define NULLDATAPREPAREENGINE_H
 
-#include "abstract-data-prepare-engine.h"
+#include "abstract-data-engine.h"
 
 
-/*!
- * \class NullDataPrepareEngine
- * \brief Реализация класса отсутствия подготовки данных
- */
-class NullDataPrepareEngine Q_DECL_FINAL : public AbstractDataPrepareEngine
-{
-    Q_OBJECT
-public:
-    /*!
-     * \brief Конструктор
-     * \param trainPtr - указатель на модель поезда
-     */
-    NullDataPrepareEngine();
+///*!
+// * \class NullDataPrepareEngine
+// * \brief Реализация класса отсутствия подготовки данных
+// */
+//class NullDataPrepareEngine Q_DECL_FINAL : public AbstractDataPrepareEngine
+//{
+//    Q_OBJECT
+//public:
+//    /*!
+//     * \brief Конструктор
+//     * \param trainPtr - указатель на модель поезда
+//     */
+//    NullDataPrepareEngine();
 
-    /// Вернуть пустой массив данных
-    QByteArray getPreparedData() Q_DECL_OVERRIDE;
+//    /// Вернуть пустой массив данных
+//    QByteArray getPreparedData() Q_DECL_OVERRIDE;
 
-};
+//};
 
 #endif // NULLDATAPREPAREENGINE_H

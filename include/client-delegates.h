@@ -92,4 +92,28 @@ public:
 
 };
 
+
+
+class ClientDelegate Q_DECL_FINAL : public AbstractClientDelegate
+{
+public:
+    ///
+    ClientDelegate();
+    ///
+    ~ClientDelegate();
+
+    ///
+    void storeInputData() Q_DECL_OVERRIDE;
+
+    ///
+    void setOutputBuffer(QByteArray buf) Q_DECL_OVERRIDE;
+
+    ///
+    void sendAuthorized() Q_DECL_OVERRIDE;
+
+    ///
+    void sendDataToTcpClient() Q_DECL_OVERRIDE;
+
+};
+
 #endif // CLIENT_DELEGATES_H

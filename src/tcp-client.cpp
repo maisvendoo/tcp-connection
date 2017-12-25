@@ -1,20 +1,8 @@
-//------------------------------------------------------------------------------
-//
-//      Универсальный TCP-клиент для обмена данными приложений Qt
-//      (c) РГУПС, ВЖД 31/03/2017
-//      Разработал: Притыкин Д.Е.
-//
-//------------------------------------------------------------------------------
-/*!
- * \file
- * \brief Универсальный TCP-клиент для обмена данными приложений Qt
- * \copyright РГУПС, ВЖД
- * \author Притыкин Д.Е.
- * \date 31/03/2017
- */
+// 29 11 2017
 
-#include    "tcp-client.h"
-#include    "tcp-server-structs.h"
+#include "tcp-client.h"
+#include "tcp-structs.h"
+//#include    "tcp-server-structs.h"
 
 #include    <QTimer>
 
@@ -107,7 +95,7 @@ void TcpClient::connectToServer()
 //------------------------------------------------------------------------------
 //  (слот) Передача данных серверу
 //------------------------------------------------------------------------------
-void TcpClient::sendToServer(QByteArray &send_data)
+void TcpClient::sendToServer(QByteArray &&send_data)
 {
     socket->write(send_data);
     socket->flush();
@@ -154,15 +142,17 @@ void TcpClient::onConnect()
 
     if (socket->isOpen())
     {      
-        client_cmd_t cmd;
-        cmd.id = AUTHORIZATION;
-        cmd.data_size = tcp_config.name.toUtf8().size() + 1;
-        memcpy(cmd.data, tcp_config.name.toStdString().c_str(), cmd.data_size);
+        tcp_cmd_t cmd;
 
-        QByteArray toSend = QByteArray::fromRawData((const char*) &cmd,
-                                                    sizeof(client_cmd_t));
+//        client_cmd_t cmd;
+//        cmd.id = AUTHORIZATION;
+//        cmd.data_size = tcp_config.name.toUtf8().size() + 1;
+//        memcpy(cmd.data, tcp_config.name.toStdString().c_str(), cmd.data_size);
 
-        sendToServer(toSend);
+//        QByteArray toSend = QByteArray::fromRawData((const char*) &cmd,
+//                                                    sizeof(client_cmd_t));
+
+        sendToServer(cmd.toByteAray());
     }
 
     emit connectedToServer();

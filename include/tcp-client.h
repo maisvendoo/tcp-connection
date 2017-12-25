@@ -1,17 +1,4 @@
-//------------------------------------------------------------------------------
-//
-//      Универсальный TCP-клиент для обмена данными приложений Qt
-//      (c) РГУПС, ВЖД 31/03/2017
-//      Разработал: Притыкин Д.Е., Ковшиков С.В.
-//
-//------------------------------------------------------------------------------
-/*!
- * \file
- * \brief Универсальный TCP-клиент для обмена данными приложений Qt
- * \copyright РГУПС, ВЖД
- * \author Притыкин Д.Е., Ковшиков С.В.
- * \date 31/03/2017
- */
+// 29 11 2017
 
 #ifndef		TCPCLIENT_H
 #define 	TCPCLIENT_H
@@ -24,9 +11,9 @@
 
 class QTimer;
 
-#include    "tcp-data.h"
+#include    "tcp-client-structs.h"
 
-#if defined(TCPCLIENT_LIB)
+#if defined(TCPCONNECTION_LIB)
 # define TCPCLIENT_EXPORT Q_DECL_EXPORT
 #else
 # define TCPCLIENT_EXPORT Q_DECL_IMPORT
@@ -69,7 +56,7 @@ public slots:
     void connectToServer();
 
     /// Передача данных серверу
-    void sendToServer(QByteArray &send_data);
+    void sendToServer(QByteArray &&send_data);
 
     ///
     void connectArrayPtr(QByteArray* &arrPtr);
@@ -86,9 +73,6 @@ signals:
     ///
     void authorized();
 
-//    ///
-//    void firstReceived();
-
 
 public slots:
 
@@ -100,12 +84,6 @@ public slots:
 
     /// Обработка факта разрыва соединения с сервером
     void onDisconnect();
-
-    /// Послать состояние клиента другому классу
-//    virtual void sendTcpState(tcp_state_t *tcp_state);
-
-    /// Отдать принятые данные другому классу
-//    virtual void sendData(QByteArray *recv_data);
 
 
 protected:

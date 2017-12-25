@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 //      Базовый класс подготовки данных для отправки клиентам
-//      (c) РГУПС, ВЖД 13/07/2017
+//      (c) РГУПС, ВЖД 29/11/201
 //      Разработал: Ковшиков С. В.
 //
 //-----------------------------------------------------------------------------
@@ -10,19 +10,28 @@
  * \brief Базовый класс подготовки данных для отправки клиентам
  * \copyright РГУПС, ВЖД
  * \author Ковшиков С. В.
- * \date 13/07/2017
+ * \date 29/11/201
  */
 
 
-#include "abstract-data-prepare-engine.h"
+#include "abstract-data-engine.h"
 
 
 
 //-----------------------------------------------------------------------------
 // КОНСТРУКТОР
 //-----------------------------------------------------------------------------
-AbstractDataPrepareEngine::AbstractDataPrepareEngine()
+AbstractDataEngine::AbstractDataEngine(size_t inBufSize, size_t outBufSize)
     : QObject(Q_NULLPTR)
+{
+    inputBuffer_.reserve(inBufSize);
+    outputBuffer_.reserve(outBufSize);
+}
+
+
+
+
+AbstractDataEngine::~AbstractDataEngine()
 {
 
 }
@@ -32,7 +41,78 @@ AbstractDataPrepareEngine::AbstractDataPrepareEngine()
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-void AbstractDataPrepareEngine::setDataFromClient(client_cmd_t dataFromClient)
+void AbstractDataEngine::setInputData(QByteArray inData)
 {
-    Q_UNUSED(dataFromClient);
+    if (inData.size() == inputBuffer_.size())
+    {
+        memcpy(inputBuffer_.data(), inData.data(), inputBuffer_.size());
+    }
+    //inputBuffer_ = std::move(inData);
+}
+
+
+
+
+void AbstractDataEngine::setOutputBuffer(QByteArray outData)
+{
+    if (outData.size() == outputBuffer_.size())
+    {
+        memcpy(outputBuffer_.data(), outData.data(), outputBuffer_.size());
+    }
+//    outputBuffer_ = std::move(outData);
+}
+
+
+
+
+QByteArray AbstractDataEngine::getInputBuffer() const
+{
+    return inputBuffer_;
+}
+
+
+
+
+QByteArray AbstractDataEngine::getOutputData() const
+{
+    return outputBuffer_;
+}
+
+
+
+//-----------------------------------------------------------------------------
+//
+//      Класс отсутствия подготовки данных
+//      (c) РГУПС, ВЖД 29/11/2017
+//      Разработал: Ковшиков С. В.
+//
+//-----------------------------------------------------------------------------
+/*!
+ * \file
+ * \brief Класс отсутствия подготовки данных
+ * \copyright РГУПС, ВЖД
+ * \author Ковшиков С. В.
+ * \date 29/11/201
+ */
+
+#include "null-data-engine.h"
+
+
+//-----------------------------------------------------------------------------
+// КОНСТРУКТОР
+//-----------------------------------------------------------------------------
+NullDataEngine::NullDataEngine()
+    : AbstractDataEngine(0, 0)
+{
+
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Вернуть пустой массив данных
+//-----------------------------------------------------------------------------
+QByteArray NullDataEngine::getPreparedData()
+{
+    return QByteArray();
 }

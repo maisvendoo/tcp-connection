@@ -14,40 +14,73 @@
  */
 
 
-#ifndef ABSTRACTDATAPREPAREENGINE_H
-#define ABSTRACTDATAPREPAREENGINE_H
+#ifndef ABSTRACT_DATA_ENGINE_H
+#define ABSTRACT_DATA_ENGINE_H
 
 #include <QObject>
 #include <QByteArray>
+#include <tcp-structs.h>
 
-#include "tcp-server-structs.h"
+//#include "tcp-server-structs.h"
 
 /*!
  * \class AbstractDataPrepareEngine
  * \brief Реализация класса подготовки данных для отправки клиентам
  */
-class AbstractDataPrepareEngine : public QObject
+class AbstractDataEngine : public QObject
 {
     Q_OBJECT
 public:
-    /*!
-     * \brief Конструкор
-     * \param trainPtr - указатель на модель поезда
-     */
-    AbstractDataPrepareEngine();
+    /// Конструктор
+    AbstractDataEngine(size_t inBufSize, size_t outBufSize);
+    ///
+    ~AbstractDataEngine();
 
     /// Вернуть подготовленные данные
     virtual QByteArray getPreparedData() = 0;
 
     /// Установить необходимые данные, принятые от клиента
-    virtual void setDataFromClient(client_cmd_t dataFromClient);
+    void setInputData(QByteArray inData);
+
+    ///
+    void setOutputBuffer(QByteArray outData);
+
+    ///
+    QByteArray getInputBuffer() const;
+
+    ///
+    QByteArray getOutputData() const;
 
 
 signals:
-
     ///
-    void requestEs2gDataFromServer(char* data);
+    void requestDataFromServer(char* data);
 
+private:
+    ///
+    QByteArray inputBuffer_;
+    ///
+    QByteArray outputBuffer_;
 };
 
-#endif // ABSTRACTDATAPREPAREENGINE_H
+
+
+/*!
+ * \class NullDataPrepareEngine
+ * \brief Реализация класса отсутствия подготовки данных
+ */
+class NullDataEngine Q_DECL_FINAL : public AbstractDataEngine
+{
+    Q_OBJECT
+public:
+    /*!
+     * \brief Конструктор
+     * \param trainPtr - указатель на модель поезда
+     */
+    NullDataEngine();
+
+    /// Вернуть пустой массив данных
+    QByteArray getPreparedData() Q_DECL_OVERRIDE;
+
+};
+#endif // ABSTRACT_DATA_ENGINE_H

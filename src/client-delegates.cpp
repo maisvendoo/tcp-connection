@@ -53,6 +53,8 @@ void AbstractClientDelegate::setSocket(QTcpSocket *sock)
 
 qintptr AbstractClientDelegate::getSocketDescriptor() const
 {
+    if (socket_)
+        return socket_->socketDescriptor();
 
     return 0;
 }
@@ -62,6 +64,8 @@ qintptr AbstractClientDelegate::getSocketDescriptor() const
 
 bool AbstractClientDelegate::checkSocket(QTcpSocket *sock) const
 {
+    if (socket_ && sock)
+        return socket_ == sock;
 
     return false;
 }
@@ -79,7 +83,7 @@ void AbstractClientDelegate::setDataEngine(AbstractDataEngine *engine)
 
 void AbstractClientDelegate::setInputBuffer(QByteArray buf)
 {
-
+    engine_->setInputData(std::move(buf));
 }
 
 
@@ -87,7 +91,7 @@ void AbstractClientDelegate::setInputBuffer(QByteArray buf)
 
 QByteArray AbstractClientDelegate::getInputBuffer() const
 {
-    return QByteArray();
+    return engine_->getInputBuffer();
 }
 
 
@@ -136,4 +140,70 @@ void DummyClientDelegate::sendAuthorized()
 void DummyClientDelegate::sendDataToTcpClient()
 {
     // Ничего не делать
+}
+
+
+
+
+
+ClientDelegate::ClientDelegate()
+{
+
+}
+
+
+
+
+ClientDelegate::~ClientDelegate()
+{
+
+}
+
+
+
+
+void ClientDelegate::storeInputData()
+{
+    if (socket_->state() != QTcpSocket::ListeningState)
+        return;
+
+    QByteArray buf = socket_->readAll();
+
+    if (buf.size() != sizeof(tcp_cmd_t)) // FIXME delete - перенести в сервер!
+        return;
+
+    engine_->setInputData(socket_->readAll());
+}
+
+
+
+
+void ClientDelegate::setOutputBuffer(QByteArray buf)
+{
+    engine_->setOutputBuffer(std::move(buf));
+}
+
+
+
+
+void ClientDelegate::sendAuthorized()
+{
+    if (socket_->isOpen())
+    {
+        QByteArray arr("auth");
+        socket_->write(arr);
+        socket_->flush();
+    }
+}
+
+
+
+
+void ClientDelegate::sendDataToTcpClient()
+{
+    if (socket_->isOpen())
+    {
+        socket_->write(engine_->getPreparedData());
+        socket_->flush();
+    }
 }

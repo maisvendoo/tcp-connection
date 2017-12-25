@@ -1,32 +1,142 @@
-//------------------------------------------------------------------------------
-//
-//      TCP-сервер для связи с клиентскими частями тренажера
-//      (с) РГУПС, ВЖД 22/06/2017
-//      Разработал: Притыкин Д.Е.
-//
-//------------------------------------------------------------------------------
-/*!
- * \file
- * \brief TCP-сервер для связи с клиентскими частями тренажера
- * \copyright РГУПС, ВЖД
- * \author Притыкин Д.Е.
- * \date 22/06/2017
- */
+// 29 11 2017
 
 #ifndef TCPSERVER_H
 #define TCPSERVER_H
 
-#include    <QObject>
-#include    <QTcpServer>
-#include    <QTcpSocket>
-#include    <QMap>
+//#include <QObject>
+#include <QTcpServer>
+//#include    <QTcpSocket>
+#include <QMap>
 
-#include    "tcp-server-structs.h"
+#include "a-tcp-namespace.h"
+#include "tcp-server-structs.h"
 
-#include    "abstract-data-prepare-engine.h"
-#include    "null-data-prepare-engine.h"
+//#include    "abstract-data-prepare-engine.h"
+//#include    "null-data-prepare-engine.h"
 
-class DisplayDataPrepareEngine;
+class QTcpSocket;
+
+class AbstractClientDelegate;
+class DummyClientDelegate;
+class AbstractEngineDefiner;
+
+struct tcp_cmd_t;
+
+
+#if defined(TCPCONNECTION_LIB)
+# define TCPSERVER_EXPORT Q_DECL_EXPORT
+#else
+# define TCPSERVER_EXPORT Q_DECL_IMPORT
+#endif
+
+
+
+/*!
+ * \class
+ * \brief Реализация логики работы TCP-сервера
+ */
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+class TcpServer : public QTcpServer
+{
+    Q_OBJECT
+
+public:
+
+    TcpServer(QObject* parent = Q_NULLPTR); // move port to start()
+    virtual ~TcpServer();
+
+    /// Запуск сервера
+//    void start_old(); // add port here
+    void start(quint16 port);
+
+    ///
+//    void setEs2gData(es2g_data_t &data); // delete
+
+    ///
+//    QByteArray getCommandsArray(); // delete
+
+    ///
+    void setEngineDefiner(AbstractEngineDefiner *&definer);
+
+
+signals:
+
+    /// Печать данных в лог
+    void logPrint(ATcp::ServerLogs, QString msg = ""); // delete modify?
+
+    /// delete
+    //void sendRefStatesToEs2g(const char* refStates); // delete
+
+
+public slots:
+
+    ///
+//    void sendEs2gDataToClient(char* data); // delete
+
+
+private:
+    //
+    AbstractEngineDefiner* engineDefiner_;
+
+    /// Порт, на котором будет слушать сервер
+    quint16 port; // delete - можно запросить у базового класса
+
+    /// Статус сервера
+    bool    is_started; // delete - можно запросить у базового класса
+
+    /// Список подключенных клиентов
+    QMap<int, client_t *> clients_old; // delete
+    QMap<qintptr, AbstractClientDelegate*> clients_;
+
+    /// Список авторизованных клиентов
+    QMap<QString, client_t*> authorizedClients_old; // delete
+    QMap<QString, AbstractClientDelegate*> authorizedClients_;
+
+    //
+    DummyClientDelegate* dummyClient_;
+
+    ///
+    void authorizeClient_(AbstractClientDelegate* clnt, QByteArray data);
+
+    ///
+    client_t* getClientByName_(QString name); // delete
+    AbstractClientDelegate* getClientByName_(QString name);
+
+    ///
+    client_t* getClientBySocket_(QTcpSocket* socket); // delete
+    AbstractClientDelegate* getClientBySocket_(QTcpSocket* socket);
+
+    ///
+    QString clientNameFromCmd_(client_cmd_t &cmd); // delete
+    QString clientNameFromCmd_(tcp_cmd_t &cmd);
+
+    ///
+    //void defineClientDataPrepareEngine_(client_t* client);
+
+
+private slots:
+
+    /// Прием соединения клиентов
+    void clientConnection_old();
+    void clientConnection_();
+
+    /// Обработка ошибок соединений
+    void onAcceptError(QAbstractSocket::SocketError error);
+
+    /// Прием данных от клиентов
+    void receive_old();
+    void receive_();
+
+    /// Обработка отключения клиентов
+    void clientDisconnected_old();
+
+    /// Обработка команд клиентов
+    void parseCommand(QTcpSocket *socket, client_cmd_t cmd); // можно сделать все в receive
+
+};
+
 
 
 /*!
@@ -36,7 +146,7 @@ class DisplayDataPrepareEngine;
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-struct client_t
+/*struct client_t
 {
     QString         name;           ///< Имя клиента
     QTcpSocket      *socket;        ///< Сокет, открытый клиентом для обмена
@@ -47,7 +157,7 @@ struct client_t
     client_t()
         : socket(Q_NULLPTR)
         , is_connected(false)
-        , dataEngine(new NullDataPrepareEngine())
+//        , dataEngine(new NullDataPrepareEngine())
         , clientData(client_cmd_t())
     {
         name.clear();
@@ -86,110 +196,6 @@ struct client_t
             socket->flush();
         }
     }
-};
-
-
-
-/*!
- * \class
- * \brief Реализация логики работы TCP-сервера
- */
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
-class TcpServer : public QTcpServer
-{
-    Q_OBJECT
-
-public:
-
-    TcpServer(quint16 port);
-    virtual ~TcpServer();
-
-    /// Запуск сервера
-    void start();
-
-    ///
-    void setEs2gData(es2g_data_t &data);
-
-    ///
-    QByteArray getCommandsArray();
-
-
-signals:
-
-    /// Печать данных в лог
-    void logPrint(QString msg);
-
-    /// delete
-    void sendRefStatesToEs2g(const char* refStates);
-
-
-public slots:
-
-    ///
-    void sendEs2gDataToClient(char* data);
-
-
-private:
-
-    /// Порт, на котором будет слушать сервер
-    quint16 port;
-
-    /// Статус сервера
-    bool    is_started;
-
-    ///
-    es2g_data_t es2g_data_;
-
-    ///
-    data_from_train_t data_from_train;
-
-    ///
-    data_from_traction_drive_t data_from_traction_drive;
-
-    ///
-    data_from_panel_t data_from_panel;
-
-    ///
-    DisplayDataPrepareEngine* display1_DataPrepareEngine;
-    DisplayDataPrepareEngine* display2_DataPrepareEngine;
-
-    /// Список подключенных клиентов
-    QMap<int, client_t *> clients;
-
-    /// Список авторизованных клиентов
-    QMap<QString, client_t*> authorizedClients_;
-
-    client_t* getClientByName_(QString name);
-
-    ///
-    client_t* getClientBySocket_(QTcpSocket* socket);
-
-    ///
-    QString clientNameFromCmd_(client_cmd_t &cmd);
-
-    ///
-    void defineClientDataPrepareEngine_(client_t* client);
-
-
-private slots:
-
-    /// Прием соединения клиентов
-    void clientConnection();
-
-    /// Обработка ошибок соединений
-    void onAcceptError(QAbstractSocket::SocketError error);
-
-    /// Прием данных от клиентов
-    void receive();
-
-    /// Обработка отключения клиентов
-    void clientDisconnected();
-
-    /// Обработка команд клиентов
-    void parseCommand(QTcpSocket *socket, client_cmd_t cmd);
-
-};
+};*/
 
 #endif // TCPSERVER_H
