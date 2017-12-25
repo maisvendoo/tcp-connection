@@ -1,12 +1,22 @@
-// 30/11/2017
+//-----------------------------------------------------------------------------
+//
+//      Класс-пространство имен различных перечислителей
+//      (c) РГУПС, ВЖД 30/11/2017
+//      Разработал: Ковшиков С. В.
+//
+//-----------------------------------------------------------------------------
+/*!
+ *  \file
+ *  \brief Класс-пространство имен различных перечислителей
+ *  \copyright РГУПС, ВЖД
+ *  \author Ковшиков С. В
+ *  \date 30/11/2017
+ */
+
 #ifndef ATCPNAMESPACE_H
 #define ATCPNAMESPACE_H
 
 #include <QObject>
-
-constexpr ptrdiff_t WORD_LEN = 4;
-const char AUTH_WORD[WORD_LEN]{'a', 'u', 't', 'h'};
-const char DENY_WORD[WORD_LEN]{'d', 'e', 'n', 'y'};
 
 
 class ATcp
@@ -61,7 +71,7 @@ public:
     {
         cc_UNKNOWN_CODE,        ///< Неизвестная ситуация
         //
-        cc_IN_AUTHORIZATION,
+        cc_IN_AUTHORIZATION,    ///< Запрос авторизации
         // OK сообщения
         cc_OK_CONNECTED,
         cc_OK_AUTHOROZED,       ///< Клиент авторизован
@@ -86,19 +96,24 @@ public:
     Q_ENUM(AuthResponse)
 
 
-    ///
+    /// Преобразовать структуру в QByteArray (структура должна быть копируемой)
     template<typename T>
     static QByteArray toByteArray(T data, bool *ok = Q_NULLPTR)
     {
+        // Проверяем возможность копирования структуры
         bool tempOk = std::is_trivially_copyable<T>::value;
         if (ok)
             *ok = tempOk;
+
+        // Если структура mem-копируема
         if (tempOk)
         {
+            // Генерируем массив
             QByteArray arr(sizeof(T), Qt::Uninitialized);
             memcpy(arr.data(), &data, sizeof(T));
             return arr;
         }
+        // Иначе возвращаем пустой массив
         return QByteArray();
     }
 

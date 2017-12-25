@@ -1,4 +1,18 @@
-// 30/11/2017
+//-----------------------------------------------------------------------------
+//
+//      Классы представителей(делегатов) клиентов на сервере
+//      (c) РГУПС, ВЖД 30/11/2017
+//      Разработал: Ковшиков С. В.
+//
+//-----------------------------------------------------------------------------
+/*!
+ *  \file
+ *  \brief Классы представителей(делегатов) клиентов на сервере
+ *  \copyright РГУПС, ВЖД
+ *  \author Ковшиков С. В
+ *  \date 30/11/2017
+ */
+
 #ifndef CLIENT_DELEGATES_H
 #define CLIENT_DELEGATES_H
 
@@ -16,122 +30,130 @@ class AbstractDataEngine;
 #endif
 
 
+/*!
+ * \class AbstractClientDelegate
+ * \brief Базовый класс представителя(делегата) клиента на сервере
+ */
 class DELEGATE_EX AbstractClientDelegate : public QObject
 {
     Q_OBJECT
 
 public:
-    ///
+    /// Конструктор
     AbstractClientDelegate(QObject* parent = Q_NULLPTR);
-    ///
+    /// Деструктор
     virtual ~AbstractClientDelegate();
 
-    ///
+    /// Вернуть имя
     QString getName() const;
 
-    ///
+    /// Установить имя
     virtual void setName(QString name);
 
-    ///
+    /// Установить сокет
     virtual void setSocket(QTcpSocket* sock);
 
-    ///
-    virtual qintptr getId() const;
+    /// Вернуть дескриптор сокета
+    qintptr getId() const;
 
-    ///
-    void setDataEngine(AbstractDataEngine* engine);
+    /// Установить механизм подготовки данных
+    virtual void setDataEngine(AbstractDataEngine* engine);
 
-    ///
+    /// Сохранить буффер запроса от клиента
     virtual void storeInputData() = 0;
 
-    ///
+    /// Установить буффер данных для отправки клиенту
     virtual void setOutputBuffer(QByteArray buf) = 0;
 
-    ///
+    /// Вернуть буффер данных принятых от клиента
     QByteArray getInputBuffer() const;
 
-    ///
+    /// Отправить результат авторизации
     virtual void sendAuthorizationResponse(ATcp::AuthResponse resp) = 0;
 
-    ///
+    /// Отправить данные клиенту
     virtual void sendDataToTcpClient() = 0;
 
 
 signals:
-    ///
+    /// Оповещение о приёме данных от клиента
     void dataReceived(QByteArray arr);
 
 
 protected:
-    //
-    QString name_;
-    //
-    qintptr localId_;
-    //
-    QTcpSocket* socket_;
-    //
-    AbstractDataEngine* engine_;
+    // Имя делегата
+    QString name_; ///< Имя делегата
+    // Дескриптор сокета
+    qintptr localId_; ///< Дескриптор сокета
+    // Сокет
+    QTcpSocket* socket_; ///< Сокет
+    // Механизм подготовки данных
+    AbstractDataEngine* engine_; ///< Механизм подготовки данных
 
 };
 
 
-
+/*!
+ * \class DummyDelegate
+ * \brief Класс "затычка"(null-object) представителя(делегата) для перенаправки
+ * данных ему, в случае отсутствия клиента с необходимым именем
+ */
 class DELEGATE_EX DummyDelegate Q_DECL_FINAL : public AbstractClientDelegate
 {
     Q_OBJECT
 
 public:
-    ///
+    /// Конструктор
     DummyDelegate(QObject *parent = Q_NULLPTR);
-    ///
+    /// Деструктор
     ~DummyDelegate();
 
-    ///
+    /// Установить имя (пустышка)
     void setName(QString name) Q_DECL_OVERRIDE;
 
-    ///
+    /// Установить сокет (пустышка)
     void setSocket(QTcpSocket* sock) Q_DECL_OVERRIDE;
 
-    ///
+    /// Установить механизм подготовки данных (пустышка)
+    void setDataEngine(AbstractDataEngine* engine) Q_DECL_OVERRIDE;
+
+    /// Сохранить буффер запроса от клиента (пустышка)
     void storeInputData() Q_DECL_OVERRIDE;
 
-    ///
+    /// Установить буффер данных для отправки клиенту (пустышка)
     void setOutputBuffer(QByteArray buf) Q_DECL_OVERRIDE;
 
-    ///
+    /// Отправить результат авторизации (пустышка)
     void sendAuthorizationResponse(ATcp::AuthResponse resp) Q_DECL_OVERRIDE;
 
-    ///
+    /// Отправить данные клиенту (пустышка)
     void sendDataToTcpClient() Q_DECL_OVERRIDE;
 
 };
 
 
-
+/*!
+ * \class The ClientDelegate class
+ * \brief Класс представителя(делегата) клиента на сервере
+ */
 class DELEGATE_EX ClientDelegate Q_DECL_FINAL : public AbstractClientDelegate
 {
 public:
-    ///
+    /// Конструктор
     ClientDelegate(QObject* parent = Q_NULLPTR);
-    ///
+    /// Деструктор
     ~ClientDelegate();
 
-    ///
+    /// Сохранить буффер запроса от клиента
     void storeInputData() Q_DECL_OVERRIDE;
 
-    ///
+    /// Установить буффер данных для отправки клиенту
     void setOutputBuffer(QByteArray buf) Q_DECL_OVERRIDE;
 
-    ///
-//    void sendAuthorized() Q_DECL_OVERRIDE;
-
-    ///
-//    void sendDenied(ATcp::ServerLogs errId) Q_DECL_OVERRIDE;
-
-    ///
+    /// Отправить результат авторизации
     void sendAuthorizationResponse(ATcp::AuthResponse resp) Q_DECL_OVERRIDE;
 
-    ///
+    /// Отправить данные клиенту
     void sendDataToTcpClient() Q_DECL_OVERRIDE;
 
 };

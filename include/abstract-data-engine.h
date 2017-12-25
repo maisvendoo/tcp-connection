@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 //      Базовый класс подготовки данных для отправки клиентам
-//      (c) РГУПС, ВЖД 13/07/2017
+//      (c) РГУПС, ВЖД 29/11/2017
 //      Разработал: Ковшиков С. В.
 //
 //-----------------------------------------------------------------------------
@@ -10,9 +10,8 @@
  * \brief Базовый класс подготовки данных для отправки клиентам
  * \copyright РГУПС, ВЖД
  * \author Ковшиков С. В.
- * \date 13/07/2017
+ * \date 29/11/2017
  */
-
 
 #ifndef ABSTRACT_DATA_ENGINE_H
 #define ABSTRACT_DATA_ENGINE_H
@@ -38,34 +37,30 @@ class DATA_ENGINE_EX AbstractDataEngine : public QObject
 public:
     /// Конструктор
     AbstractDataEngine();
-    ///
+    /// Деструктор
     ~AbstractDataEngine();
 
     /// Вернуть подготовленные данные
     virtual QByteArray getPreparedData() = 0;
 
-    /// Установить необходимые данные, принятые от клиента
+    /// Установить данные, принятые от клиента
     void setInputData(QByteArray inData);
 
-    ///
+    /// Установить данные, для отправки клиенту
     void setOutputBuffer(QByteArray outData);
 
-    ///
+    /// Вернуть буффер полученный от клиента
     QByteArray getInputBuffer() const;
 
-    ///
+    /// Вернуть буффер, предназначенный для отправки клиенту
     QByteArray getOutputBuffer() const;
 
 
-signals:
-    ///
-    void requestDataFromServer(char* data);
-
 protected:
-    ///
-    QByteArray inputBuffer_;
-    ///
-    QByteArray outputBuffer_;
+    // Буффер данных принятых от клиента
+    QByteArray inputBuffer_; ///< Буффер данных принятых от клиента
+    // Буффер данных для отправки клиенту
+    QByteArray outputBuffer_; ///< Буффер данных для отправки клиенту
 };
 
 
@@ -78,10 +73,7 @@ class DATA_ENGINE_EX NullDataEngine Q_DECL_FINAL : public AbstractDataEngine
 {
     Q_OBJECT
 public:
-    /*!
-     * \brief Конструктор
-     * \param trainPtr - указатель на модель поезда
-     */
+    /// Конструктор
     NullDataEngine();
 
     /// Вернуть пустой массив данных

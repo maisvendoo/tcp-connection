@@ -1,4 +1,17 @@
-// 29 11 2017
+//-----------------------------------------------------------------------------
+//
+//      Класс TCP клиента для общения с TCP сервером
+//      (c) РГУПС, ВЖД 29/11/2017
+//      Разработал: Ковшиков С. В.
+//
+//-----------------------------------------------------------------------------
+/*!
+ *  \file
+ *  \brief Класс TCP клиента для общения с TCP сервером
+ *  \copyright РГУПС, ВЖД
+ *  \author Ковшиков С. В
+ *  \date 29/11/2017
+ */
 
 #ifndef		TCPCLIENT_H
 #define 	TCPCLIENT_H
@@ -34,8 +47,9 @@ class TCPCLIENT_EXPORT TcpClient Q_DECL_FINAL : public QObject
     Q_OBJECT
 
 public:
-    /// Конструктор и деструктор
+    /// Конструктор
     explicit TcpClient();
+    /// Деструктор
     ~TcpClient();
 
     /// Инициализация клиента
@@ -47,10 +61,10 @@ public:
     /// Запуск клиента
     void start();
 
-    ///
+    /// Вернуть структуру состояния клиента
     const tcp_config_t getConfig() const;
 
-    ///
+    /// Отправить данные на сервер с заданной командой
     void sendToServer(ATcp::TcpCommand comm, QByteArray data);
 
     /// Передача данных серверу
@@ -58,22 +72,22 @@ public:
 
 
 signals:
-    ///
+    /// Сигнал подключения клиента к серверу
     void connectedToServer();
 
-    ///
+    /// Сигнал отключения клиента от сервера
     void disconnectedFromServer();
 
-    ///
+    /// Сигнал авторизации клиента на сервере
     void authorized();
 
-    ///
+    /// Сигнал ответа об ошибке авторизации с кодом ошибки
     void authorizationDenied(ATcp::AuthResponse errId);
 
-    ///
+    /// Сигнал приёма данных
     void dataReceived(QByteArray inData);
 
-    ///
+    /// Сигнал вывода лога с кодом
     void logPrint(ATcp::ClientCodes logId, QString msg = "");
 
 
@@ -92,40 +106,40 @@ public slots:
 
 
 protected:
-    /// Клиентский сокет
-    QTcpSocket      *socket;
+    // Клиентский сокет
+    QTcpSocket      *socket; ///< Клиентский сокет
 
-    /// Входящий поток данных
-    QDataStream     in;
+    // Входящий поток данных
+    QDataStream     in; ///< Входящий поток данных
 
-    /// Текущее состояние клиента
-    tcp_state_t     tcp_state;
+    // Текущее состояние клиента
+    tcp_state_t     tcp_state; ///< Текущее состояние клиента
 
-    /// Конфигурация клиента
-    tcp_config_t    tcp_config;
+    // Конфигурация клиента
+    tcp_config_t    tcp_config; ///< Конфигурация клиента
 
-    /// Данные, принятые от сервера
-    QByteArray      incomingData_;
+    // Данные, принятые от сервера
+    QByteArray      incomingData_; ///< Данные, принятые от сервера
 
-    ///
-    ATcp::AuthResponse lastAuthResponse_;
+    // Последний код авторизации
+    ATcp::AuthResponse lastAuthResponse_; ///< Последний код авторизации
 
 
 private:
-    ///
-    QTimer* timerConnector_;
+    // Таймер попыток соединения с сервером
+    QTimer* timerConnector_; ///< Таймер попыток соединения с сервером
 
-    ///
+    /// Обработать ошибку авторизации
     void handleAuthError_(ATcp::ClientCodes _cl);
+
+    /// Отправить массив байт серверу
+    void sendToServer_(QByteArray send_data);
 
 
 private slots:
-    ///
-    void sendToServer_(QByteArray send_data);
-
-    ///
+    /// Обработка таймера соединения
     void onTimerConnector();
 
 };
 
-#endif
+#endif // TCPCLIENT_H
