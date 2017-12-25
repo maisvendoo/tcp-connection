@@ -244,16 +244,15 @@ void TcpClient::slotDisconnect()
     // Очищаем массив данных
     incomingData_ = QByteArray(0, Qt::Uninitialized);
 
-    //
     switch (lastAuthResponse_)
     {
-    //
+    // Если неизвестная ошибка или был успешно авторизован
     case ATcp::ar_NO_RESONSE:
     case ATcp::ar_AUTHORIZED:
+        // Снова пытаемся подключиться
         timerConnector_->start();
         break;
 
-    //
     default:
         break;
     }
