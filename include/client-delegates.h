@@ -90,8 +90,9 @@ public:
     QString getName() const;
 
     /// Установить имя
-//    virtual void setName(QString name); // delete заменить на следующий
     virtual void rememberName();
+
+    void forgetName();
 
     /// Установить сокет
     virtual void setSocket(QTcpSocket* sock);

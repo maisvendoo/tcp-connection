@@ -83,7 +83,7 @@ AbstractClientDelegate::AbstractClientDelegate(QObject *parent)
     , name_("")
     , localId_(0)
     , socket_(Q_NULLPTR)
-    , engine_(new NullDataEngine())
+    , engine_(Q_NULLPTR)
 {
 
 }
@@ -128,18 +128,21 @@ QString AbstractClientDelegate::getName() const
 //-----------------------------------------------------------------------------
 // Установить имя
 //-----------------------------------------------------------------------------
-//void AbstractClientDelegate::setName(QString name)
-//{
-//    name_ = std::move(name);
-//}
-
 void AbstractClientDelegate::rememberName()
 {
     if (!socket_->isOpen())
         return;
 
     // Читаем остатки данных из сокета
-    engine_->setInputData(socket_->readAll());
+    name_ = socket_->readAll();
+}
+
+
+
+
+void AbstractClientDelegate::forgetName()
+{
+    name_.clear();
 }
 
 
@@ -204,6 +207,7 @@ DummyDelegate::DummyDelegate(QObject* parent)
     : AbstractClientDelegate(parent)
 {
     name_ = "dummy";
+    engine_ = new NullDataEngine();
 }
 
 //-----------------------------------------------------------------------------
