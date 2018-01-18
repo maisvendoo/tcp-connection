@@ -70,6 +70,12 @@ public:
     /// Передача данных серверу
     void sendToServer(tcp_cmd_t &cmd);
 
+    /// Вернуть принятые данные
+    QByteArray getBuffer() const;
+
+    /// Вернуть размер буффера
+    int getBufferSize() const;
+
 
 signals:
     /// Сигнал подключения клиента к серверу
