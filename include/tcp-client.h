@@ -64,6 +64,9 @@ public:
     /// Вернуть структуру состояния клиента
     const tcp_config_t getConfig() const;
 
+    /// Отправить только запрос
+    void sendToServer(ATcp::TcpCommand comm);
+
     /// Отправить данные на сервер с заданной командой
     void sendToServer(ATcp::TcpCommand comm, QByteArray data);
 
