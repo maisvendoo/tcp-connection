@@ -120,6 +120,17 @@ public:
         return QByteArray();
     }
 
+
+    /// Преобразовать структуру в QByteArray (структура должна быть копируемой)
+    template<typename T>
+    static QByteArray toByteArrayHard(T data)
+    {
+        // Генерируем массив
+        QByteArray arr(sizeof(T), Qt::Uninitialized);
+        memcpy(arr.data(), &data, sizeof(T));
+        return arr;
+    }
+
 };
 
 #endif // ATCPNAMESPACE_H
