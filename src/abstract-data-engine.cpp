@@ -43,7 +43,7 @@ AbstractDataEngine::~AbstractDataEngine()
 //-----------------------------------------------------------------------------
 void AbstractDataEngine::setInputData(QByteArray inData)
 {
-    inputBuffer_ = std::move(inData);
+    inputBuffer_ = inData;
 }
 
 
@@ -53,7 +53,7 @@ void AbstractDataEngine::setInputData(QByteArray inData)
 //-----------------------------------------------------------------------------
 void AbstractDataEngine::setOutputBuffer(QByteArray outData)
 {
-    outputBuffer_ = std::move(outData);
+    outputBuffer_ = outData;
 }
 
 

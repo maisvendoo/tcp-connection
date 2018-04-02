@@ -336,7 +336,7 @@ void ClientDelegate::storeInputData()
 //-----------------------------------------------------------------------------
 void ClientDelegate::setOutputBuffer(QByteArray buf)
 {
-    engine_->setOutputBuffer(std::move(buf));
+    engine_->setOutputBuffer(buf);
 }
 
 

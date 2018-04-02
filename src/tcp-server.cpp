@@ -93,7 +93,7 @@ void TcpServer::start(quint16 port)
 //-----------------------------------------------------------------------------
 void TcpServer::setPossibleClients(QStringList names)
 {
-    guestList_ = std::move(names);
+    guestList_ = names;
 }
 
 
@@ -106,7 +106,7 @@ void TcpServer::setEngineDefiner(AbstractEngineDefiner *definer)
     if (engineDefiner_)
         delete engineDefiner_;
 
-    engineDefiner_ = std::move(definer);
+    engineDefiner_ = definer;
 }
 
 

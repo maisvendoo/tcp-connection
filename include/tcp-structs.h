@@ -70,13 +70,13 @@ struct tcp_cmd_t
     /// Установить буффер из строки с заверш. нулём
     void setData(const char* _null_term_str)
     {
-        setData(std::move(QByteArray(_null_term_str)));
+        setData(QByteArray(_null_term_str));
     }
 
     /// Установить буффер из char* заданной длины
     void setData(const char* _dat, size_t _len)
     {
-        setData(std::move(QByteArray(_dat, static_cast<int>(_len))));
+        setData(QByteArray(_dat, static_cast<int>(_len)));
     }
 
     /// Установить данные из строки
