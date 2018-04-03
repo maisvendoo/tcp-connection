@@ -324,7 +324,7 @@ void ClientDelegate::storeInputData()
         return;
 
     // Читаем остатки данных из сокета
-    engine_->setInputData(socket_->readAll());
+    engine_->setInputBuffer(socket_->readAll());
     // Оповещаем о приёме данных
     emit face_->dataReceived(engine_->getInputBuffer());
 }

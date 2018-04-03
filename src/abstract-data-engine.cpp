@@ -14,6 +14,7 @@
  */
 
 #include "abstract-data-engine.h"
+#include <QMutexLocker>
 
 
 
@@ -41,8 +42,9 @@ AbstractDataEngine::~AbstractDataEngine()
 //-----------------------------------------------------------------------------
 // Установить данные, принятые от клиента
 //-----------------------------------------------------------------------------
-void AbstractDataEngine::setInputData(QByteArray inData)
+void AbstractDataEngine::setInputBuffer(QByteArray inData)
 {
+    QMutexLocker locker(&inMutex_);
     inputBuffer_ = inData;
 }
 
@@ -53,6 +55,7 @@ void AbstractDataEngine::setInputData(QByteArray inData)
 //-----------------------------------------------------------------------------
 void AbstractDataEngine::setOutputBuffer(QByteArray outData)
 {
+    QMutexLocker locker(&outMutex_);
     outputBuffer_ = outData;
 }
 
@@ -61,8 +64,9 @@ void AbstractDataEngine::setOutputBuffer(QByteArray outData)
 //-----------------------------------------------------------------------------
 // Вернуть буффер полученный от клиента
 //-----------------------------------------------------------------------------
-QByteArray AbstractDataEngine::getInputBuffer() const
+QByteArray AbstractDataEngine::getInputBuffer()
 {
+    QMutexLocker locker(&inMutex_);
     return inputBuffer_;
 }
 
@@ -71,8 +75,9 @@ QByteArray AbstractDataEngine::getInputBuffer() const
 //-----------------------------------------------------------------------------
 // Вернуть буффер, предназначенный для отправки клиенту
 //-----------------------------------------------------------------------------
-QByteArray AbstractDataEngine::getOutputBuffer() const
+QByteArray AbstractDataEngine::getOutputBuffer()
 {
+    QMutexLocker locker(&outMutex_);
     return outputBuffer_;
 }
 

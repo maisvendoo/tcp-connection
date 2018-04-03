@@ -18,6 +18,7 @@
 
 #include <QObject>
 #include <QByteArray>
+#include <QMutex>
 
 
 #if defined(TCPCONNECTION_LIB)
@@ -44,19 +45,24 @@ public:
     virtual QByteArray getPreparedData() = 0;
 
     /// Установить данные, принятые от клиента
-    void setInputData(QByteArray inData);
+    void setInputBuffer(QByteArray inData);
 
     /// Установить данные, для отправки клиенту
     void setOutputBuffer(QByteArray outData);
 
     /// Вернуть буффер полученный от клиента
-    QByteArray getInputBuffer() const;
+    QByteArray getInputBuffer();
 
     /// Вернуть буффер, предназначенный для отправки клиенту
-    QByteArray getOutputBuffer() const;
+    QByteArray getOutputBuffer();
 
 
 protected:
+    //
+    QMutex inMutex_;
+    //
+    QMutex outMutex_;
+
     // Буффер данных принятых от клиента
     QByteArray inputBuffer_; ///< Буффер данных принятых от клиента
     // Буффер данных для отправки клиенту
