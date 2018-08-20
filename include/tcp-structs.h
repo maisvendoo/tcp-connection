@@ -24,6 +24,8 @@
 #include <QByteArray>
 #include <QTcpSocket>
 
+typedef qint64 buf_size_t;
+
 
 /*!
  * \struct tcp_cmd_t
@@ -41,7 +43,7 @@ struct tcp_cmd_t
         // Тип запроса
         ATcp::TcpCommand command;
         // Размер буффера данных
-        size_t bufferSize;
+        buf_size_t bufferSize;
 
         /// Конструктор
         info_t()
@@ -59,7 +61,7 @@ struct tcp_cmd_t
     QByteArray  buffer;
 
     // Размер инфо-части
-    static const size_t INFO_SIZE = sizeof(info_t);
+    static const buf_size_t INFO_SIZE = sizeof(info_t);
 
     /// Конструктор
     tcp_cmd_t()
@@ -74,7 +76,7 @@ struct tcp_cmd_t
     }
 
     /// Установить буффер из char* заданной длины
-    void setData(const char* _dat, size_t _len)
+    void setData(const char* _dat, buf_size_t _len)
     {
         setData(QByteArray(_dat, static_cast<int>(_len)));
     }
@@ -121,7 +123,7 @@ struct tcp_cmd_t
     /// Проверить сокет на количество данных для чтения инфо-структуры
     static bool validInfoSize(QTcpSocket* _sock)
     {
-        return static_cast<size_t>(_sock->size()) >= INFO_SIZE;
+        return static_cast<buf_size_t>(_sock->size()) >= INFO_SIZE;
     }
 
     /// Получить инфо-структуру
@@ -133,9 +135,9 @@ struct tcp_cmd_t
     }
 
     /// Проверить сокет на количество данных для чтения буффера
-    static bool validBufferSize(size_t _bufSz, QTcpSocket* _sock)
+    static bool validBufferSize(buf_size_t _bufSz, QTcpSocket* _sock)
     {
-        return _bufSz == static_cast<size_t>(_sock->size());
+        return _bufSz == static_cast<buf_size_t>(_sock->size());
     }
 };
 
