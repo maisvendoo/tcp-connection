@@ -78,6 +78,9 @@ public:
 
     /// Вернуть размер буффера
     int getBufferSize() const;
+    
+    /// Отключение прокси
+    void setNoProxy(bool no_proxy = true);
 
 
 signals:

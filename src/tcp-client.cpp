@@ -17,6 +17,7 @@
 
 #include    <QTimer>
 #include    <QTcpSocket>
+#include    <QNetworkProxy>
 
 #include "tcp-structs.h"
 
@@ -327,4 +328,13 @@ void TcpClient::onTimerConnector()
     {
         this->connectToServer();
     }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void TcpClient::setNoProxy(bool no_proxy)
+{
+    if (no_proxy)
+	socket->setProxy(QNetworkProxy(QNetworkProxy::NoProxy));
 }
