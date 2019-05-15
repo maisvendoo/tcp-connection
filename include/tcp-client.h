@@ -77,11 +77,17 @@ public:
     QByteArray getBuffer() const;
 
     /// Вернуть размер буффера
-    int getBufferSize() const;
+
+
     
     /// Отключение прокси
     void setNoProxy(bool no_proxy = true);
 
+    int getBufferSize() const;    
+
+
+    /// Установить ожидаемый размер данных
+    void setRecvDataSize(qint64 size);
 
 signals:
     /// Сигнал подключения клиента к серверу
@@ -136,6 +142,11 @@ protected:
     // Последний код авторизации
     ATcp::AuthResponse lastAuthResponse_; ///< Последний код авторизации
 
+    // Флаг авторизации
+    bool is_auth;
+
+    // Размер данных, ожидаемых от сервера
+    qint64  recvDataSize;
 
 private:
     // Таймер попыток соединения с сервером

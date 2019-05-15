@@ -28,7 +28,7 @@
 TcpClient::TcpClient()
     : lastAuthResponse_(ATcp::ar_NO_RESONSE)
 {
-
+    is_auth = false;
 }
 
 
@@ -71,7 +71,7 @@ void TcpClient::init(tcp_config_t tcp_config)
     connect(socket, SIGNAL(disconnected()), this, SLOT(slotDisconnect()));
 
     // Прием данных
-    connect(socket, SIGNAL(readyRead()), this, SLOT(receive()));
+    connect(socket, SIGNAL(readyRead()), this, SLOT(receive()));    
 }
 
 
@@ -161,7 +161,10 @@ int TcpClient::getBufferSize() const
     return incomingData_.size();
 }
 
-
+void TcpClient::setRecvDataSize(qint64 size)
+{
+    recvDataSize = size;
+}
 
 //------------------------------------------------------------------------------
 //  (слот) Cоединение с сервером
@@ -186,7 +189,14 @@ void TcpClient::connectToServer()
 void TcpClient::receive()
 {
     // Читаем принятые данные
-    incomingData_ = socket->readAll();
+    if (is_auth)
+    {
+        // Собираем данные из нескольких принятых пакетов
+        if (socket->bytesAvailable() < recvDataSize)
+            return;
+    }
+
+    incomingData_ = socket->read(recvDataSize);
 
     // Наращиваем счетчик принятых пакетов
     tcp_state.recv_count++;
@@ -205,6 +215,7 @@ void TcpClient::receive()
         {
         // Если успешно авторизован
         case ATcp::ar_AUTHORIZED:
+            is_auth = true;
             emit authorized();
             emit logPrint(ATcp::cc_OK_AUTHOROZED, tcp_config.name);
             break;
@@ -270,6 +281,7 @@ void TcpClient::slotDisconnect()
 {    
     emit disconnectedFromServer();
 
+    is_auth = false;
     socket->abort();
 
     // Сбрасываем счетчик
