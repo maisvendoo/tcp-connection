@@ -80,14 +80,10 @@ public:
     QByteArray getBuffer() const;
 
     /// Вернуть размер буффера
+    int getBufferSize() const;
 
-
-    
     /// Отключение прокси
     void setNoProxy(bool no_proxy = true);
-
-    int getBufferSize() const;    
-
 
     /// Установить ожидаемый размер данных
     void setRecvDataSize(qint64 size);
