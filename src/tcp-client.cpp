@@ -17,6 +17,7 @@
 
 #include    <QTimer>
 #include    <QTcpSocket>
+#include    <QNetworkProxy>
 
 #include "tcp-structs.h"
 
@@ -28,6 +29,7 @@ TcpClient::TcpClient()
     : lastAuthResponse_(ATcp::ar_NO_RESONSE)
 {
     is_auth = false;
+    socket = Q_NULLPTR;
 }
 
 
@@ -80,6 +82,9 @@ void TcpClient::init(tcp_config_t tcp_config)
 //------------------------------------------------------------------------------
 bool TcpClient::isConnected() const
 {
+    if (socket == Q_NULLPTR)
+        return false;
+
     return socket->state() == QTcpSocket::ConnectedState;
 }
 
@@ -93,7 +98,14 @@ void TcpClient::start()
     timerConnector_->start();
 }
 
-
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void TcpClient::stop()
+{
+    slotDisconnect();
+    timerConnector_->stop();
+}
 
 //------------------------------------------------------------------------------
 // Вернуть структуру состояния клиента
@@ -188,17 +200,19 @@ void TcpClient::connectToServer()
 void TcpClient::receive()
 {
     // Читаем принятые данные
-    if (is_auth)
+    // (Комментирую до лучших времен... Притыкин 16/05/2019)
+    /*if (is_auth)
     {
         // Собираем данные из нескольких принятых пакетов
         if (socket->bytesAvailable() < recvDataSize)
             return;
-    }
+    }*/
 
-    incomingData_ = socket->read(recvDataSize);
+    //incomingData_ = socket->read(recvDataSize);
+    incomingData_ = socket->readAll();
 
     // Наращиваем счетчик принятых пакетов
-    tcp_state.recv_count++;
+    tcp_state.recv_count++;    
 
     // Генерация сигнала об успешной авторизации
     if (tcp_state.recv_count == 1)
@@ -322,6 +336,9 @@ void TcpClient::handleAuthError_(ATcp::ClientCodes _cl)
 //------------------------------------------------------------------------------
 void TcpClient::sendToServer_(QByteArray send_data)
 {
+    if (socket == Q_NULLPTR)
+        return;
+
     socket->write(send_data);
     socket->flush();
 
@@ -339,4 +356,13 @@ void TcpClient::onTimerConnector()
     {
         this->connectToServer();
     }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void TcpClient::setNoProxy(bool no_proxy)
+{
+    if (no_proxy)
+        socket->setProxy(QNetworkProxy(QNetworkProxy::NoProxy));
 }

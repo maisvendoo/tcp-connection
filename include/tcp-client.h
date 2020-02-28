@@ -61,6 +61,9 @@ public:
     /// Запуск клиента
     void start();
 
+    /// Останов клиента
+    void stop();
+
     /// Вернуть структуру состояния клиента
     const tcp_config_t getConfig() const;
 
@@ -77,7 +80,14 @@ public:
     QByteArray getBuffer() const;
 
     /// Вернуть размер буффера
+
+
+    
+    /// Отключение прокси
+    void setNoProxy(bool no_proxy = true);
+
     int getBufferSize() const;    
+
 
     /// Установить ожидаемый размер данных
     void setRecvDataSize(qint64 size);
