@@ -30,6 +30,8 @@ TcpClient::TcpClient()
 {
     is_auth = false;
     socket = Q_NULLPTR;
+    recvDataSize = 0;
+    timerConnector_ = nullptr;
 }
 
 
